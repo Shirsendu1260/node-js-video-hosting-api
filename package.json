@@ -1,7 +1,7 @@
 {
   "name": "node-js-video-hosting-api",
   "version": "1.0.0",
-  "description": "A video hosting backend API built with Node.js, Express, and MongoDB featuring secure JWT auth and Cloudinary integration.",
+  "description": "A video hosting backend API project built with Node.js, Express, and MongoDB featuring secure JWT auth and Cloudinary integration.",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/Shirsendu1260/node-js-video-hosting-api#readme",
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "prettier": "^3.8.1"
   }
 }
