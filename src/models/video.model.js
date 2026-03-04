@@ -1,4 +1,12 @@
 import mongoose from 'mongoose';
+import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
+
+/*
+mongoose-aggregate-paginate-v2
+This is a plugin that adds pagination support to aggregation queries.
+Meaning:
+You can do complex aggregation pipelines and still paginate results easily without manual pagination.
+*/
 
 const videoSchema = new mongoose.Schema({
 	videoFile: {
@@ -35,5 +43,8 @@ const videoSchema = new mongoose.Schema({
 		default: true
 	}
 }, { timestamps: true });
+
+// plugin() -> A reusable function that adds extra functionality to a schema.
+videoSchema.plugin(mongooseAggregatePaginate);
 
 export const Video = mongoose.model('Video', videoSchema);
