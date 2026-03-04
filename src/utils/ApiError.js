@@ -22,7 +22,7 @@ class ApiError extends Error {
 		// Optional field to attach extra data (currently unused, can be removed if not needed)
 
 		this.success = false; 
-		// Useful for consistent API responses (indicates failure)
+		// Useful for consistent API responses ('false' indicates failure)
 
 		this.errors = errors; 
 		// Store additional error details (like validation issues)
