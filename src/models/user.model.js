@@ -70,7 +70,7 @@ userSchema.methods.isPasswordCorrect = async function(password) {
 	return await bcrypt.compare(password, this.password); // returns true/false
 };
 
-// NOTE: JWT is a bearer token, means what it bears we consider it true
+// NOTE: JWT is a bearer token, means what it bears we consider it true and accepts
 // Short reminder: Bearer tokens grant whatever permissions the token contains. 
 // 		 Protect them (use HTTPS, store securely).
 
@@ -130,7 +130,7 @@ userSchema.methods.generateAccessJWTToken = async function() {
 		This controls how long token is valid.
 		Example values:
 		"15m", "1h", "7d"
-		After expiry: Token becomes invalid, user must use refresh token
+		After expiry: Token becomes invalid, user must use refresh token to issue a new access token
 		*/
 		{
 			expiresIn: process.env.SECRET_ACCESS_TOKEN_EXPIRY
@@ -158,6 +158,38 @@ userSchema.methods.generateRefreshJWTToken = async function() {
 Same concept but usually longer-lived and signed with a different secret.
 You can (optionally) store the refresh token (or a hashed version) in user.refreshToken in DB for revocation.
 Recommendation: store a hashed refresh token in DB (so if DB leaks, raw tokens aren’t exposed), or use rotating refresh tokens.
+*/
+
+/*
+JWT (JSON Web Token)
+
+Structure:
+HEADER.PAYLOAD.SIGNATURE
+
+Example:
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+eyJ1c2VySWQiOjEyMywiZW1haWwiOiJ1c2VyQGV4YW1wbGUuY29tIn0.
+SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+
+
+1. Header
+Info about token type and algorithm.
+{ "alg": "HS256", "typ": "JWT" }
+
+2. Payload
+Actual data (claims).
+{ "userId": 123, "email": "user@example.com" }
+
+3. Signature
+Created using:
+HMACSHA256(
+  base64UrlEncode(header) + "." + base64UrlEncode(payload),
+  secret_key
+)
+
+Purpose:
+- verifies the token is authentic
+- ensures header/payload were not modified
 */
 
 export const User = mongoose.model('User', userSchema);
