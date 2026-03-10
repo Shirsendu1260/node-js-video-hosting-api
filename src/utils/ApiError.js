@@ -19,7 +19,7 @@ class ApiError extends Error {
 		// Store HTTP status code for sending proper response
 
 		this.data = null; 
-		// Optional field to attach extra data (currently unused, can be removed if not needed)
+		// Optional field to attach extra data (currently unused to denote an error)
 
 		this.success = false; 
 		// Useful for consistent API responses ('false' indicates failure)

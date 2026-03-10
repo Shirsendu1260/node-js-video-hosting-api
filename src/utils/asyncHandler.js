@@ -20,8 +20,47 @@
 
 // Using promises
 const asyncHandler = (requestHandler) => {
+	// This returns a new Express middleware function that will be executed in applied routes
 	return (req, res, next) => {
 		Promise.resolve(requestHandler(req, res, next)).catch((error) => next(error));
+
+		/*
+		Promise.resolve(requestHandler(req, res, next))
+		This runs your controller function.
+		Why Promise.resolve()?
+		Because controllers may be: async function, normal function
+		Promise.resolve() ensures it always behaves like a Promise.
+		*/
+
+		/*
+		.catch((error) => next(error));
+		If any error happens: database error, undefined variable, rejected promise
+		it will automatically go to: next(error)
+		which triggers Express error middleware.
+		*/
+
+		// // Without asyncHandler:
+		// app.get("/users/:id", async (req, res, next) => {
+		//   try {
+		//     const user = await User.findById(req.params.id);
+		//     res.json(user);
+		//   } catch (error) {
+		//     next(error);
+		//   }
+		// });
+
+		// // With asyncHandler:
+		// app.get("/users/:id", asyncHandler(async (req, res) => {
+		//   const user = await User.findById(req.params.id);
+		//   res.json(user);
+		// }));
+
+		/*
+		Client Request -> Express Route -> asyncHandler(controller) -> controller executes
+		-> Error occurs? -> catch() -> next(error) -> Express Error Middleware
+		*/
+
+		// asyncHandler wraps async controllers and forwards errors to Express automatically.
 
 		/*
 		What it does:

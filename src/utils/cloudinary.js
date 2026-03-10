@@ -23,7 +23,7 @@ const fileUploader = async (localFilePath) => {
           resource_type: 'auto' // Automatically determine filetype
         };
 
-		// Upload the local file from server to Cloudinary cloud storage
+		    // Upload the local file from server to Cloudinary cloud storage
         const uploadResult = await cloudinary.uploader.upload(localFilePath, options);
         console.log('UPLOAD SUCCESSFUL ON CLOUDINARY. SOURCE:', uploadResult.secure_url);
 
@@ -48,7 +48,8 @@ const fileUploader = async (localFilePath) => {
 	catch(error) {
         console.log('CLOUDINARY UPLOAD ERROR:', error);
         fs.unlinkSync(localFilePath); // Remove (unlink) the saved temporary file from our local server storage
-
         return null;
 	}
 };
+
+export { fileUploader };

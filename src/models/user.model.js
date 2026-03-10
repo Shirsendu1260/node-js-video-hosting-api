@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 		enum: ['M', 'F', 'O'],
-		description: "'M' -> 'Male', 'F' -> 'Female', 'O' -> 'Other'"
+		description: "'M' -> 'Male', 'F' -> 'Female', 'O' -> 'Others'"
 	},
 	avatar: {
 		type: String, // Cloudinary uploaded image's URL
@@ -55,7 +55,7 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // pre(), a middleware hook, runs right before a document is saved.
-userSchema.pre('save', async function(next) { // function(next) is used (not an arrow) because this must reference the MongoDB document.
+userSchema.pre('save', async function(next) { // function(next) is used (not an arrow) because 'this' must reference the MongoDB document.
 	// If the password was changed, it hashes it with bcrypt.hash(password, 10) where 10 is the salt rounds.
 	if(this.isModified('password')) {
 		this.password = await bcrypt.hash(this.password, SALT_ROUNDS);
@@ -106,7 +106,7 @@ userSchema.methods.generateAccessJWTToken = async function() {
 
 		So don’t put: passwords, sensitive secrets (it's base64 encoded and easily readable).
 
-		You’re putting:
+		We re putting:
 		_id -> main thing needed to identify user
 		email, username, fullName -> optional convenience data
 		*/

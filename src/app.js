@@ -2,8 +2,15 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { DATA_LIMIT } from './constants.js';
+import userRouter from './routes/user.routes.js';
 
 const app = express();
+
+
+
+
+
+/****************************** MIDDLEWARES SETUP ******************************/
 
 // 1. Allow requests from frontend (CORS setup)
 app.use(cors({
@@ -16,7 +23,7 @@ app.use(express.json({
 	limit: DATA_LIMIT // Prevent very large payloads
 }));
 
-// 3. Parse URL-encoded request bodies (from URL, HTML forms etc.)
+// 3. Parse URL-encoded request bodies
 app.use(express.urlencoded({
 	extended: true,  // Allow nested objects (without this "user[name]=Shiv" would not parse correctly)
 	limit: DATA_LIMIT
@@ -28,5 +35,19 @@ app.use(express.static('public'));
 // 5. Middleware that can access cookies from user's browser and set cookies in it
 //    Reads cookies from incoming HTTP requests (without this "req.cookies" would be undefined)
 app.use(cookieParser());
+
+
+
+
+
+/****************************** ROUTES SETUP ******************************/
+
+///// Routes declaration /////
+
+app.use('/api/v1/users', userRouter); // The best practice is to define that we are creating APIs and need to tell their versions in this way
+
+
+
+
 
 export { app };
