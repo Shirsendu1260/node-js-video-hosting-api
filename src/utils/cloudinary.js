@@ -45,6 +45,7 @@ const fileUploader = async (localFilePath) => {
         */
 
         return uploadResult;
+  }
 	catch(error) {
         console.log('CLOUDINARY UPLOAD ERROR:', error);
         fs.unlinkSync(localFilePath); // Remove (unlink) the saved temporary file from our local server storage
