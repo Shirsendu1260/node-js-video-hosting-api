@@ -55,15 +55,10 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // pre(), a middleware hook, runs right before a document is saved.
-userSchema.pre('save', async function(next) { // function(next) is used (not an arrow) because 'this' must reference the MongoDB document.
+userSchema.pre('save', async function(next) { // function(next) is used (not an arrow) because 'this' must reference the MongoDB document to be created/updated.
 	// If the password was changed, it hashes it with bcrypt.hash(password, 10) where 10 is the salt rounds.
-	if(this.isModified('password')) {
-		this.password = await bcrypt.hash(this.password, SALT_ROUNDS);
-		next();
-	}
-	else {
-		next();
-	}
+	if(!this.isModified('password')) return next();
+	this.password = await bcrypt.hash(this.password, SALT_ROUNDS);
 });
 
 userSchema.methods.isPasswordCorrect = async function(password) {

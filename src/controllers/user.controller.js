@@ -2,8 +2,10 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { User } from '../models/user.model.js';
-import { fileUploader } from '../utils/cloudinary.js';
+import { cloudinaryUploader } from '../utils/cloudinary.js';
 import Joi from 'joi';
+
+const subFolder = 'user/';
 
 const signUpUser = asyncHandler(async (req, res) => {
 	/******** Step 1: Get user details from request object ********/
@@ -51,10 +53,13 @@ const signUpUser = asyncHandler(async (req, res) => {
                       'any.required': 'Gender is required.'
                     }),
     	password: Joi.string()
-                    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,50}$/)
+                    .alphanum()
+                    .min(6)
+                    .max(50)
                     .required()
                     .messages({
-                      'string.pattern.base': 'Password must be 6–50 characters and include uppercase, lowercase, number, and special character.',
+                      'string.min': 'Password must be at least 6 characters.',
+                      'string.max': 'Password cannot exceed 50 characters.',
                       'string.empty': 'Password is required.',
                       'any.required': 'Password is required.'
                     }),
@@ -138,8 +143,8 @@ const signUpUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Avatar image is required.');
     }
 
-    const avatarOnCloudinary = await fileUploader(avatarOnLocalPath);
-    const coverImageOnCloudinary = coverImageOnLocalPath ? await fileUploader(coverImageOnLocalPath) : null;
+    const avatarOnCloudinary = await cloudinaryUploader(avatarOnLocalPath, subFolder);
+    const coverImageOnCloudinary = coverImageOnLocalPath ? await cloudinaryUploader(coverImageOnLocalPath, subFolder) : null;
 
     if(!avatarOnCloudinary) {
         throw new ApiError(400, 'Avatar image is required.');
