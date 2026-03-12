@@ -1,8 +1,15 @@
 import { Router } from 'express';
-import { signUpUser, signInUser } from '../controllers/user.controller.js';
+import { signUpUser, signInUser, signOutUser } from '../controllers/user.controller.js';
 import { upload } from '../middlewares/multer.middleware.js';
+import { verifyJWT } from '../middlewares/auth.middleware.js';
+
+
 
 const router = Router();
+
+
+
+////////////////////////////////  PUBLIC ROUTES  ////////////////////////////////
 
 router.route('/sign-up').post(
 	/*
@@ -44,5 +51,14 @@ router.route('/sign-up').post(
 ); // Example -> http://localhost:8000/api/v1/users/sign-up
 
 router.route('/sign-in').post(signInUser);
+
+
+
+////////////////////////////////  AUTHENTICATED ROUTES  ////////////////////////////////
+
+router.route('/sign-out').post(verifyJWT, signOutUser); 
+// verifyJWT -> Middleware here 
+// Then 'signOutUser' will be called with the help of next() in 'verifyJWT' middleware
+// At this point, we have access of req.user (created by 'verifyJWT' middlware) in 'signOutUser'
 
 export default router;

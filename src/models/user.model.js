@@ -119,7 +119,7 @@ userSchema.methods.generateAccessJWTToken = async function() {
 		Server can verify it was issued by you
 		If this leaks -> attackers can generate valid tokens.
 		*/
-		process.env.SECRET_ACCESS_TOKEN,
+		process.env.ACCESS_TOKEN_SECRET_KEY,
 
 		/*
 		This controls how long token is valid.
@@ -128,7 +128,7 @@ userSchema.methods.generateAccessJWTToken = async function() {
 		After expiry: Token becomes invalid, user must use refresh token to issue a new access token
 		*/
 		{
-			expiresIn: process.env.SECRET_ACCESS_TOKEN_EXPIRY
+			expiresIn: process.env.ACCESS_TOKEN_SECRET_KEY_EXPIRY
 		}
 	);
 };
@@ -140,11 +140,11 @@ userSchema.methods.generateRefreshJWTToken = async function() {
 			_id: this._id, // At this point, document is saved, so we have the access of its unique id
 		},
 
-		process.env.SECRET_REFRESH_TOKEN,
+		process.env.REFRESH_TOKEN_SECRET_KEY,
 
 		// Expiry
 		{
-			expiresIn: process.env.SECRET_REFRESH_TOKEN_EXPIRY
+			expiresIn: process.env.REFRESH_TOKEN_SECRET_KEY_EXPIRY
 		}
 	);
 };

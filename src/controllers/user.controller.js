@@ -3,10 +3,16 @@ import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { User } from '../models/user.model.js';
 import { cloudinaryUploader } from '../utils/cloudinary.js';
+import { generateAccessAndRefreshTokens } from '../utils/generateTokens.js';
 import Joi from 'joi';
+
+
 
 const subFolder = 'user/';
 
+
+
+////////////////////////////////  SIGN UP  ////////////////////////////////
 const signUpUser = asyncHandler(async (req, res) => {
 	/******** Step 1: Get user details from request object ********/
     const { fullName, username, email, gender, password } = req.body;
@@ -180,10 +186,90 @@ const signUpUser = asyncHandler(async (req, res) => {
     );
 });
 
+
+
+////////////////////////////////  SIGN IN  ////////////////////////////////
 const signInUser = asyncHandler(async (req, res) => {
-	return res.status(200).json({
-		message: 'User signed in successfully'
-	});
+    /******** Step 1: Collect request data ********/
+    const { username, email, password } = req.body;
+
+
+    /******** Step 2: Check for login credentials (username, email, password) from request ********/
+    // User should be able to login with either one
+    if(!username && !email) {
+        throw new ApiError(400, 'Username or email is required.');
+    }
+
+    if(!password) throw new ApiError(400, 'Password is required.');
+
+
+    /******** Step 3: Find the user in DB ********/
+    let user = await User.findOne({
+        $or: [{ username }, { email }]
+    });
+
+
+    /******** Step 4: If user exists, check entered password is correct or not ********/
+    if(!user) {
+        throw new ApiError(404, 'User not found.');
+    }
+
+
+    /******** Step 5: If password is correct, generate access and refresh JWT tokens ********/
+    const isPasswordValid = await user.isPasswordCorrect(password);
+
+    if(!isPasswordValid) {
+        throw new ApiError(401, 'Invalid password.');
+    }
+
+
+    /******** Step 6: Prepare to send this tokens to user via secure cookies ********/
+    // `req.user._id` comes from the **auth middleware (verifyJWT)** which attaches the user to the request. 
+    // This is why `verifyJWT` middleware must run before `signOutUser`.
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+    user = await User.findById(user._id).select('-password -refreshToken'); // At this point, new refresh token is saved in Db
+
+    // Configs to send tokens via secure cookies
+    const options = {
+        httpOnly: true,  // Cookie not accessible via JavaScript in browser
+        secure: true     // Cookie only sent over HTTPS
+    };
+
+
+	/******** Step 7: Send login success response and the tokens within cookie ********/
+    return res.status(200)
+                .cookie('accessToken', accessToken, options)
+                .cookie('refreshToken', refreshToken, options)
+                .json(
+                    new ApiResponse(200, { user, accessToken, refreshToken }, 'User signed in successfully.')
+                );
 });
 
-export { signUpUser, signInUser };
+
+
+////////////////////////////////  SIGN OUT  ////////////////////////////////
+const signOutUser = asyncHandler(async (req, res) => {
+    await User.findByIdAndUpdate(
+        req.user._id, 
+        {
+            $set: { refreshToken: undefined }
+        }, // what to update
+        {
+            new: true
+        } // We will have response with newly updated value (i.e with 'refreshToken' deleted/cleared)
+    );
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    };
+
+    return res.status(200)
+                .clearCookie('accessToken', options) // Given by cookie-parser
+                .clearCookie('refreshToken', options)
+                .json(new ApiResponse(200, {}, 'User signed out successfully.')); // {} -> sending empty data
+});
+
+
+
+export { signUpUser, signInUser, signOutUser };

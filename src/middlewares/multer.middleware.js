@@ -44,4 +44,4 @@ const storage = multer.diskStorage({
 	}
 });
 
-export const upload = multer({ storage }); // ES6 shorthand of { storage: storage }
+export const upload = multer({ storage }); // ES6+ shorthand of { storage: storage }
