@@ -79,7 +79,7 @@ const signUpUser = asyncHandler(async (req, res) => {
     if(error) {
     	// console.log(error);
     	const errorArray = error.details.map(detail => detail.message); // Collect all error messages into an array
-    	throw new ApiError(400, 'Validation failed.', errorArray); // 400: Bad Request, means server cannot process the request because of a client-side error
+    	throw new ApiError(400, 'Sign-up validation failed.', errorArray); // 400: Bad Request, means server cannot process the request because of a client-side error
     }
 
 
@@ -192,20 +192,61 @@ const signUpUser = asyncHandler(async (req, res) => {
 const signInUser = asyncHandler(async (req, res) => {
     /******** Step 1: Collect request data ********/
     const { username, email, password } = req.body;
+    username = username?.toLowerCase();
+    email = email?.toLowerCase();
+    // console.log(username, email);
 
 
     /******** Step 2: Check for login credentials (username, email, password) from request ********/
     // User should be able to login with either one
-    if(!username && !email) {
-        throw new ApiError(400, 'Username or email is required.');
-    }
+    const validatorSchema = Joi.object({
+        username: Joi.string()
+                        .trim()
+                        .messages({
+                          'string.empty': 'Username is required.',
+                          'any.required': 'Username is required.'
+                        }),
+        email: Joi.string()
+                    .trim()
+                    .email()
+                    .messages({
+                      'string.email': 'Please provide a valid email address.',
+                      'string.empty': 'Email is required.',
+                      'any.required': 'Email is required.'
+                    }),
+        password: Joi.string()
+                        .required()
+                        .messages({
+                          'string.empty': 'Password is required.',
+                          'any.required': 'Password is required.'
+                        })
+    })
+    .or('username', 'email')
+    .messages({
+      'object.missing': 'Please provide either username or email.'
+    });
 
-    if(!password) throw new ApiError(400, 'Password is required.');
+    // Validate
+    const { error, value } = validatorSchema.validate(
+        { username, email, password },
+        { abortEarly: false }
+    )
+
+    // Collect error messages
+    if(error) {
+        const errorArray = error.details.map(detail => detail.message);
+        throw new ApiError(400, 'Sign-in validation failed.', errorArray);
+    }
 
 
     /******** Step 3: Find the user in DB ********/
     let user = await User.findOne({
-        $or: [{ username }, { email }]
+        $or: [
+            username ? { username } : null,
+            email ? { email } : null
+        ].filter(Boolean)
+        // filter(Boolean) is a shorthand in JS that removes all 'falsy' values from the array above
+        // If the array was [{ username: '...' }, null], after filtering it becomes [{ username: '...' }]
     });
 
 
