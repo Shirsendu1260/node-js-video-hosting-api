@@ -3,9 +3,9 @@ import { User } from '../models/user.model.js';
 
 export const generateAccessAndRefreshTokens = async (userId) => {
     try {
-        const user = await User.findById(userId);
-        const accessToken = user.generateAccessJWTToken();
-        const refreshToken = user.generateRefreshJWTToken();
+        let user = await User.findById(userId);
+        const accessToken = await user.generateAccessJWTToken();
+        const refreshToken = await user.generateRefreshJWTToken();
 
         // Save refresh token in DB
         user.refreshToken = refreshToken;
@@ -14,8 +14,11 @@ export const generateAccessAndRefreshTokens = async (userId) => {
         we are only updating refreshToken, not submitting the full user form, so you don't want 
         password/email validators to run again. */
 
+        console.log('TOKEN USER:', user.fullName);
+
         return { accessToken, refreshToken };
     } catch(error) {
+        // console.error('Catch block reached while generating tokens! ERROR:', error.message);
         throw new ApiError(500, error?.message || 'Unable to create access and refresh tokens.');
     }
 };

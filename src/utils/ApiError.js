@@ -15,6 +15,8 @@ class ApiError extends Error {
 		//   "ReferenceError: Must call super constructor before using 'this'"
 		// In short: this line makes ApiError behave like a real NodeJS Error.
 
+		this.message = message;
+
 		this.statusCode = statusCode; 
 		// Store HTTP status code for sending proper response
 

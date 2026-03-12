@@ -49,7 +49,7 @@ export const verifyJWT = asyncHandler(async (req, _, next) => { // 'res' is not 
 		next() → controller runs */
 	}
 	catch(error) {
-		throw new ApiError(401, error?.message || 'Error while verifying token!')	
+		throw new ApiError(401, error?.message || 'Error while verifying token!');
 	}
 });
 

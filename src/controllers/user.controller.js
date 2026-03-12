@@ -13,7 +13,7 @@ const subFolder = 'user/';
 
 
 ////////////////////////////////  SIGN UP  ////////////////////////////////
-const signUpUser = asyncHandler(async (req, res) => {
+const signUpUser = asyncHandler(async (req, res, next) => {
 	/******** Step 1: Get user details from request object ********/
     const { fullName, username, email, gender, password } = req.body;
     // console.log(fullName, username, email, gender, password);
@@ -189,9 +189,9 @@ const signUpUser = asyncHandler(async (req, res) => {
 
 
 ////////////////////////////////  SIGN IN  ////////////////////////////////
-const signInUser = asyncHandler(async (req, res) => {
+const signInUser = asyncHandler(async (req, res, next) => {
     /******** Step 1: Collect request data ********/
-    const { username, email, password } = req.body;
+    let { username, email, password } = req.body;
     username = username?.toLowerCase();
     email = email?.toLowerCase();
     // console.log(username, email);
@@ -240,14 +240,16 @@ const signInUser = asyncHandler(async (req, res) => {
 
 
     /******** Step 3: Find the user in DB ********/
-    let user = await User.findOne({
+    const query = {
         $or: [
             username ? { username } : null,
             email ? { email } : null
         ].filter(Boolean)
         // filter(Boolean) is a shorthand in JS that removes all 'falsy' values from the array above
         // If the array was [{ username: '...' }, null], after filtering it becomes [{ username: '...' }]
-    });
+    };
+    let user = await User.findOne(query);
+    // console.log('User fetching query:', JSON.stringify(query, null, 2));
 
 
     /******** Step 4: If user exists, check entered password is correct or not ********/
@@ -289,7 +291,7 @@ const signInUser = asyncHandler(async (req, res) => {
 
 
 ////////////////////////////////  SIGN OUT  ////////////////////////////////
-const signOutUser = asyncHandler(async (req, res) => {
+const signOutUser = asyncHandler(async (req, res, next) => {
     await User.findByIdAndUpdate(
         req.user._id, 
         {
