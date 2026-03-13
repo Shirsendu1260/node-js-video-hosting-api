@@ -4,6 +4,8 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 import { User } from '../models/user.model.js';
 import { cloudinaryUploader } from '../utils/cloudinary.js';
 import { generateAccessAndRefreshTokens } from '../utils/generateTokens.js';
+import { COOKIE_SEND_OPTIONS } from '../constants.js';
+import jwt from 'jsonwebtoken';
 import Joi from 'joi';
 
 
@@ -272,17 +274,11 @@ const signInUser = asyncHandler(async (req, res, next) => {
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
     user = await User.findById(user._id).select('-password -refreshToken'); // At this point, new refresh token is saved in Db
 
-    // Configs to send tokens via secure cookies
-    const options = {
-        httpOnly: true,  // Cookie not accessible via JavaScript in browser
-        secure: true     // Cookie only sent over HTTPS
-    };
-
 
 	/******** Step 7: Send login success response and the tokens within cookie ********/
     return res.status(200)
-                .cookie('accessToken', accessToken, options)
-                .cookie('refreshToken', refreshToken, options)
+                .cookie('accessToken', accessToken, COOKIE_SEND_OPTIONS)
+                .cookie('refreshToken', refreshToken, COOKIE_SEND_OPTIONS)
                 .json(
                     new ApiResponse(200, { user, accessToken, refreshToken }, 'User signed in successfully.')
                 );
@@ -295,24 +291,67 @@ const signOutUser = asyncHandler(async (req, res, next) => {
     await User.findByIdAndUpdate(
         req.user._id, 
         {
-            $set: { refreshToken: undefined }
+            $set: { refreshToken: undefined } // Makes -> refreshToken: null
         }, // what to update
         {
-            new: true
-        } // We will have response with newly updated value (i.e with 'refreshToken' deleted/cleared)
+            returnDocument: 'after'
+        } // Return response AFTER the value is updated (i.e with 'refreshToken' deleted/cleared)
     );
 
-    const options = {
-        httpOnly: true,
-        secure: true
-    };
-
     return res.status(200)
-                .clearCookie('accessToken', options) // Given by cookie-parser
-                .clearCookie('refreshToken', options)
+                .clearCookie('accessToken', COOKIE_SEND_OPTIONS) // Given by cookie-parser
+                .clearCookie('refreshToken', COOKIE_SEND_OPTIONS)
                 .json(new ApiResponse(200, {}, 'User signed out successfully.')); // {} -> sending empty data
 });
 
 
 
-export { signUpUser, signInUser, signOutUser };
+////////////////////////////////  REFRESH ACCESS TOKEN  ////////////////////////////////
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    /******** Step 1: Collect refresh token from cookie ********/
+    const userCollectedRefreshToken = req.cookie.refreshToken || req.body.refreshToken;
+
+    if(!userCollectedRefreshToken) {
+        throw new ApiError(401, 'Unauthorized request.');
+    }
+
+
+    try {
+        /******** Step 2: Verify the collected refresh token with one that resides in server (DB) ********/
+        const decodedUserCollectedRefreshToken = await jwt.verify(userCollectedRefreshToken, process.env.REFRESH_TOKEN_SECRET_KEY);
+        // Token in client's cookie -> encrypted
+        // Token in DB we stored -> raw
+
+
+        /******** Step 3: Get user details with the help of decoded refresh token's payload ********/
+        const user = await user.findById(decodedUserCollectedRefreshToken?._id).select('-password');
+
+        if(!user) {
+            throw new ApiError(401, 'Invalid refresh token.');
+        }
+
+
+        /******** Step 4: Check both refresh tokens are same or not, if same then user is authenticated ********/
+        if(userCollectedRefreshToken !== user?.refreshToken) {
+            throw new ApiError(401, 'Refresh token is expired or used.');
+        }
+
+        const { accessToken, newRefreshToken } = await generateAccessAndRefreshTokens(user._id);
+
+
+        /******** Step 5: Send successful response with the tokens sent through cookie ********/
+        return res.status(200)
+                    .cookie('accessToken', accessToken, COOKIE_SEND_OPTIONS)
+                    .cookie('refreshToken', newRefreshToken, COOKIE_SEND_OPTIONS)
+                    .json(
+                        new ApiResponse(200, { accessToken, refreshToken: newRefreshToken }, 'Access token is refreshed successfully.')
+                    );
+    }
+    catch(error) {
+        throw new ApiError(401, error?.message || 'Invalid refresh token');
+    }
+});
+
+
+
+export { signUpUser, signInUser, signOutUser, refreshAccessToken };

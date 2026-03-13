@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { signUpUser, signInUser, signOutUser } from '../controllers/user.controller.js';
+import { signUpUser, signInUser, signOutUser, refreshAccessToken } from '../controllers/user.controller.js';
 import { upload } from '../middlewares/multer.middleware.js';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
 
@@ -60,5 +60,8 @@ router.route('/sign-out').post(verifyJWT, signOutUser);
 // verifyJWT -> Middleware here 
 // Then 'signOutUser' will be called with the help of next() in 'verifyJWT' middleware
 // At this point, we have access of req.user (created by 'verifyJWT' middlware) in 'signOutUser'
+
+router.route('/refresh-access-token').post(refreshAccessToken);
+// No need to apply middleware 'verifyJWT' as checking is already done in this routes's controller function
 
 export default router;

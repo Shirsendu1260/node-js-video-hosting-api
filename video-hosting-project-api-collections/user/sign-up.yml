@@ -1,0 +1,39 @@
+info:
+  name: sign-up
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{server}}/users/sign-up"
+  body:
+    type: multipart-form
+    data:
+      - name: fullName
+        type: text
+        value: ""
+      - name: username
+        type: text
+        value: ""
+      - name: email
+        type: text
+        value: ""
+      - name: password
+        type: text
+        value: ""
+      - name: avatar
+        type: text
+        value: ""
+      - name: coverImage
+        type: text
+        value: ""
+      - name: gender
+        type: text
+        value: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
