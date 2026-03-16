@@ -80,4 +80,6 @@ router.route('/update-profile-avatar').post(verifyJWT, upload.fields([{ name: 'a
 router.route('/update-profile-coverimage').post(verifyJWT, upload.fields([{ name: 'coverImage', maxCount: 1 }]), updateProfileCoverImage);
 router.route('/change-password').post(verifyJWT, changePassword);
 
+
+
 export default router;
