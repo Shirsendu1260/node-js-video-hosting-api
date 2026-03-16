@@ -180,7 +180,7 @@ const signUpUser = asyncHandler(async (req, res) => {
     const user = await User.create({
         fullName,
         username: username.toLowerCase(),
-        email,
+        email: email.toLowerCase(),
         gender,
         avatar: avatarOnCloudinary.secure_url,
         coverImage: coverImageOnCloudinary?.secure_url ?? '', // coverImage may or may not be uploaded by user
@@ -253,7 +253,7 @@ const signInUser = asyncHandler(async (req, res) => {
 
     // Collect error messages
     if(error) {
-        const errorArray = error.details.map(detail => { [detail.path[0]]: detail.message });
+        const errorArray = error.details.map(detail => { return { [detail.path[0]]: detail.message }; });
         console.log(errorArray);
         throw new ApiError(400, 'Sign-in validation failed.', errorArray);
     }
@@ -327,7 +327,7 @@ const signOutUser = asyncHandler(async (req, res) => {
 ////////////////////////////////  REFRESH ACCESS TOKEN  ////////////////////////////////
 const refreshAccessToken = asyncHandler(async (req, res) => {
     /******** Step 1: Collect refresh token from cookie ********/
-    const userCollectedRefreshToken = req.cookie.refreshToken || req.body.refreshToken;
+    const userCollectedRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
     if(!userCollectedRefreshToken) {
         throw new ApiError(401, 'Unauthorized request.');
@@ -342,7 +342,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 
         /******** Step 3: Get user details with the help of decoded refresh token's payload ********/
-        const user = await user.findById(decodedUserCollectedRefreshToken?._id).select('-password');
+        const user = await User.findById(decodedUserCollectedRefreshToken?._id).select('-password');
 
         if(!user) {
             throw new ApiError(401, 'Invalid refresh token.');
@@ -354,15 +354,15 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             throw new ApiError(401, 'Refresh token is expired or used.');
         }
 
-        const { accessToken, newRefreshToken } = await generateAccessAndRefreshTokens(user._id);
+        const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
 
 
         /******** Step 5: Send successful response with the tokens sent through cookie ********/
         return res.status(200)
                     .cookie('accessToken', accessToken, COOKIE_SEND_OPTIONS)
-                    .cookie('refreshToken', newRefreshToken, COOKIE_SEND_OPTIONS)
+                    .cookie('refreshToken', refreshToken, COOKIE_SEND_OPTIONS)
                     .json(
-                        new ApiResponse(200, { accessToken, refreshToken: newRefreshToken }, 'Access token is refreshed successfully.')
+                        new ApiResponse(200, { accessToken, refreshToken }, 'Access token is refreshed successfully.')
                     );
     }
     catch(error) {
@@ -384,6 +384,7 @@ const getAuthUser = asyncHandler(async (req, res) => {
 ////////////////////////////////  UPDATE PROFILE  ////////////////////////////////
 const updateProfileDetails = asyncHandler(async (req, res) => {
     const { fullName, username, email, gender } = req.body;
+    // console.log(fullName, username, email, gender);
 
     const validatorSchema = Joi.object({
         fullName: Joi.string()
@@ -432,7 +433,7 @@ const updateProfileDetails = asyncHandler(async (req, res) => {
     
     if(error) {
         // console.log(error);
-        const errorArray = error.details.map(detail => { [detail.path[0]]: detail.message });
+        const errorArray = error.details.map(detail => { return { [detail.path[0]]: detail.message }; });
         console.log(errorArray);
         throw new ApiError(400, 'Profile update validation failed.', errorArray); // 400: Bad Request, means server cannot process the request because of a client-side error
     }
@@ -443,7 +444,7 @@ const updateProfileDetails = asyncHandler(async (req, res) => {
             $set: {
                 fullName,
                 username: username.toLowerCase(),
-                email,
+                email: email.toLowerCase(),
                 gender
             }
         },
@@ -457,7 +458,7 @@ const updateProfileDetails = asyncHandler(async (req, res) => {
     }
 
     return res.status(200).json(
-        throw new ApiResponse(200, user, 'Profile updated successfully.')
+        new ApiResponse(200, user, 'Profile updated successfully.')
     );
 });
 
@@ -486,7 +487,7 @@ const updateProfileAvatar = asyncHandler(async (req, res) => {
     ).select('-password -refreshToken');
 
     return res.status(200).json(
-        throw new ApiResponse(200, user, 'Avatar image is updated successfully.')
+        new ApiResponse(200, user, 'Avatar image is updated successfully.')
     );
 });
 
@@ -515,7 +516,7 @@ const updateProfileCoverImage = asyncHandler(async (req, res) => {
     ).select('-password -refreshToken');
 
     return res.status(200).json(
-        throw new ApiResponse(200, user, 'Cover image is updated successfully.')
+        new ApiResponse(200, user, 'Cover image is updated successfully.')
     );
 });
 

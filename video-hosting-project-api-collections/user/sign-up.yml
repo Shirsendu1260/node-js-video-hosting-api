@@ -11,13 +11,13 @@ http:
     data:
       - name: fullName
         type: text
-        value: ""
+        value: S. Sarma
       - name: username
         type: text
-        value: ""
+        value: ssarma
       - name: email
         type: text
-        value: ""
+        value: ssarma@gmail.com
       - name: password
         type: text
         value: ""
@@ -25,14 +25,16 @@ http:
         type: text
         value: ""
       - name: avatar
-        type: text
-        value: ""
+        type: file
+        value:
+          - /home/tuban/Downloads/3465758758646468.jpg
       - name: coverImage
-        type: text
-        value: ""
+        type: file
+        value:
+          - /home/tuban/Downloads/3465758758646468.jpg
       - name: gender
         type: text
-        value: ""
+        value: F
   auth: inherit
 
 settings:

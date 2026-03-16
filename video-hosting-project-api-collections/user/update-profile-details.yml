@@ -1,17 +1,19 @@
 info:
-  name: sign-in
+  name: update-profile-details
   type: http
-  seq: 2
+  seq: 6
 
 http:
-  method: POST
-  url: "{{server}}/users/sign-in"
+  method: PATCH
+  url: "{{server}}/users/update-profile-details"
   body:
     type: json
     data: |-
       {
+        "fullName": "S. Sarma",
         "username": "ssarma24",
-        "password": ""
+        "email": "ss24@gmail.com",
+        "gender": "F"
       }
   auth: inherit
 
