@@ -21,6 +21,9 @@ http:
       - name: password
         type: text
         value: ""
+      - name: confirmedPassword
+        type: text
+        value: ""
       - name: avatar
         type: text
         value: ""

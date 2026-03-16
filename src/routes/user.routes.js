@@ -1,5 +1,15 @@
 import { Router } from 'express';
-import { signUpUser, signInUser, signOutUser, refreshAccessToken } from '../controllers/user.controller.js';
+import { 
+	signUpUser, 
+    signInUser, 
+    signOutUser, 
+    refreshAccessToken, 
+    getAuthUser, 
+    updateProfileDetails, 
+    updateProfileAvatar, 
+    updateProfileCoverImage, 
+    changePassword
+} from '../controllers/user.controller.js';
 import { upload } from '../middlewares/multer.middleware.js';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
 
@@ -63,5 +73,11 @@ router.route('/sign-out').post(verifyJWT, signOutUser);
 
 router.route('/refresh-access-token').post(refreshAccessToken);
 // No need to apply middleware 'verifyJWT' as checking is already done in this routes's controller function
+
+router.route('/get-auth-user').get(verifyJWT, getAuthUser);
+router.route('/update-profile-details').post(verifyJWT, updateProfileDetails);
+router.route('/update-profile-avatar').post(verifyJWT, upload.fields([{ name: 'avatar', maxCount: 1 }]), updateProfileAvatar);
+router.route('/update-profile-coverimage').post(verifyJWT, upload.fields([{ name: 'coverImage', maxCount: 1 }]), updateProfileCoverImage);
+router.route('/change-password').post(verifyJWT, changePassword);
 
 export default router;

@@ -15,9 +15,9 @@ const subFolder = 'user/';
 
 
 ////////////////////////////////  SIGN UP  ////////////////////////////////
-const signUpUser = asyncHandler(async (req, res, next) => {
+const signUpUser = asyncHandler(async (req, res) => {
 	/******** Step 1: Get user details from request object ********/
-    const { fullName, username, email, gender, password } = req.body;
+    const { fullName, username, email, gender, password, confirmedPassword } = req.body;
     // console.log(fullName, username, email, gender, password);
 
 
@@ -71,16 +71,27 @@ const signUpUser = asyncHandler(async (req, res, next) => {
                       'string.empty': 'Password is required.',
                       'any.required': 'Password is required.'
                     }),
+        confirmedPassword: Joi.string()
+                                .valid(Joi.ref('password'))
+                                // Joi.ref('password') -> Reference the value of 'password' field
+                                // .valid() -> The value must match this reference
+                                .required()
+                                .messages({
+                                    'any.only': 'Confirmed password must be exactly same as the password.',
+                                    'string.empty': 'Confirmed password is required.',
+                                    'any.required': 'Confirmed password is required.'
+                                })
     });
 
     const { error, value } = validatorSchema.validate(
-    	{ fullName, username, email, gender, password }, 
+    	{ fullName, username, email, gender, password, confirmedPassword }, 
     	{ abortEarly: false } // Ensures Joi finds all errors, not just the first one
     );
     
     if(error) {
     	// console.log(error);
     	const errorArray = error.details.map(detail => detail.message); // Collect all error messages into an array
+        console.log(errorArray);
     	throw new ApiError(400, 'Sign-up validation failed.', errorArray); // 400: Bad Request, means server cannot process the request because of a client-side error
     }
 
@@ -191,7 +202,7 @@ const signUpUser = asyncHandler(async (req, res, next) => {
 
 
 ////////////////////////////////  SIGN IN  ////////////////////////////////
-const signInUser = asyncHandler(async (req, res, next) => {
+const signInUser = asyncHandler(async (req, res) => {
     /******** Step 1: Collect request data ********/
     let { username, email, password } = req.body;
     username = username?.toLowerCase();
@@ -237,6 +248,7 @@ const signInUser = asyncHandler(async (req, res, next) => {
     // Collect error messages
     if(error) {
         const errorArray = error.details.map(detail => detail.message);
+        console.log(errorArray);
         throw new ApiError(400, 'Sign-in validation failed.', errorArray);
     }
 
@@ -287,7 +299,7 @@ const signInUser = asyncHandler(async (req, res, next) => {
 
 
 ////////////////////////////////  SIGN OUT  ////////////////////////////////
-const signOutUser = asyncHandler(async (req, res, next) => {
+const signOutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
         req.user._id, 
         {
@@ -354,4 +366,80 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 
 
-export { signUpUser, signInUser, signOutUser, refreshAccessToken };
+////////////////////////////////  GET CURRENT AUTHENTICATED USER  ////////////////////////////////
+const getAuthUser = asyncHandler(async (req, res) => {
+    return res.status(200).json(
+        new ApiResponse(200, req.user, 'Authenticated user is fetched successfully.')
+    )
+});
+
+
+
+////////////////////////////////  UPDATE PROFILE  ////////////////////////////////
+const updateProfileDetails = asyncHandler(async (req, res) => {
+
+});
+
+
+
+////////////////////////////////  UPDATE PROFILE AVATAR  ////////////////////////////////
+const updateProfileAvatar = asyncHandler(async (req, res) => {
+
+});
+
+
+
+////////////////////////////////  UPDATE PROFILE COVERIMAGE  ////////////////////////////////
+const updateProfileCoverImage = asyncHandler(async (req, res) => {
+
+});
+
+
+
+////////////////////////////////  CHANGE PASSWORD  ////////////////////////////////
+const changePassword = asyncHandler(async (req, res) => {
+    /******** Step 1: Collect data ********/
+    const { oldPassword, newPassword, confirmedPassword } = req.body;
+
+
+    /******** Step 2: As user is logged in, gather user details ********/
+    const user = await User.findById(req.user?._id);
+
+
+    /******** Step 3: Validate given passwords ********/
+    const isPasswordValid = await user.isPasswordCorrect(oldPassword);
+
+    if(!isPasswordValid) {
+        throw new ApiError(400, 'Incorrect old password.');
+    }
+
+    if(newPassword !== confirmedPassword) {
+        throw new ApiError(400, 'New and confirmed passwords are not same.');
+    }
+
+
+    /******** Step 4: Set new password ********/
+    user.password = newPassword; 
+    // At this stage, before save(), pre() hook will be run to hash this new password
+    await user.save({ validateBeforeSave: false });
+
+
+    /******** Step 5: Return response ********/
+    return res.status(200).json(
+        new ApiResponse(200, {}, 'Password changed successfully.')
+    );
+});
+
+
+
+export { 
+    signUpUser, 
+    signInUser, 
+    signOutUser, 
+    refreshAccessToken, 
+    getAuthUser, 
+    updateProfileDetails, 
+    updateProfileAvatar, 
+    updateProfileCoverImage, 
+    changePassword
+};
