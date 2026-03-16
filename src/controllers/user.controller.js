@@ -90,7 +90,13 @@ const signUpUser = asyncHandler(async (req, res) => {
     
     if(error) {
     	// console.log(error);
-    	const errorArray = error.details.map(detail => detail.message); // Collect all error messages into an array
+    	const errorArray = error.details.map(detail => {
+            return { [detail.path[0]]: detail.message };
+            // '[]' around 'detail.path[0]' tells JS - don't use this as a literal key name, evaluate it as a variable first
+            /* const field = 'email';
+            { field: 'msg' }; // Wrong -> gives { field: 'msg' }
+            { [field]: 'msg' }; // Correct -> gives { email: 'msg' } */
+        }); // Collect all error messages into an array
         console.log(errorArray);
     	throw new ApiError(400, 'Sign-up validation failed.', errorArray); // 400: Bad Request, means server cannot process the request because of a client-side error
     }
@@ -166,7 +172,7 @@ const signUpUser = asyncHandler(async (req, res) => {
     const coverImageOnCloudinary = coverImageOnLocalPath ? await cloudinaryUploader(coverImageOnLocalPath, subFolder) : null;
 
     if(!avatarOnCloudinary) {
-        throw new ApiError(400, 'Avatar image is required.');
+        throw new ApiError(400, 'Unable to upload the avatar image, please try again.');
     }
 
 
@@ -247,7 +253,7 @@ const signInUser = asyncHandler(async (req, res) => {
 
     // Collect error messages
     if(error) {
-        const errorArray = error.details.map(detail => detail.message);
+        const errorArray = error.details.map(detail => { [detail.path[0]]: detail.message });
         console.log(errorArray);
         throw new ApiError(400, 'Sign-in validation failed.', errorArray);
     }
@@ -301,7 +307,7 @@ const signInUser = asyncHandler(async (req, res) => {
 ////////////////////////////////  SIGN OUT  ////////////////////////////////
 const signOutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
-        req.user._id, 
+        req.user?._id, 
         {
             $set: { refreshToken: undefined } // Makes -> refreshToken: null
         }, // what to update
@@ -377,21 +383,140 @@ const getAuthUser = asyncHandler(async (req, res) => {
 
 ////////////////////////////////  UPDATE PROFILE  ////////////////////////////////
 const updateProfileDetails = asyncHandler(async (req, res) => {
+    const { fullName, username, email, gender } = req.body;
 
+    const validatorSchema = Joi.object({
+        fullName: Joi.string()
+                        .trim()
+                        .required()
+                        .messages({
+                          'string.empty': 'Fullname is required.',
+                          'any.required': 'Fullname is required.'
+                        }),
+        username: Joi.string()
+                        .trim()
+                        .alphanum()
+                        .min(3)
+                        .max(30)
+                        .required()
+                        .messages({
+                          'string.alphanum': 'Username can only contain letters and numbers.',
+                          'string.min': 'Username must be at least 3 characters.',
+                          'string.max': 'Username cannot exceed 30 characters.',
+                          'string.empty': 'Username is required.',
+                          'any.required': 'Username is required.'
+                        }),
+        email: Joi.string()
+                    .trim()
+                    .email()
+                    .required()
+                    .messages({
+                      'string.email': 'Please provide a valid email address.',
+                      'string.empty': 'Email is required.',
+                      'any.required': 'Email is required.'
+                    }),
+        gender: Joi.string()
+                    .trim()
+                    .valid('M', 'F', 'O')
+                    .required()
+                    .messages({
+                      'any.only': 'Gender must be Male, Female, or Others.',
+                      'any.required': 'Gender is required.'
+                    })
+    });
+
+    const { error, value } = validatorSchema.validate(
+        { fullName, username, email, gender }, 
+        { abortEarly: false } // Ensures Joi finds all errors, not just the first one
+    );
+    
+    if(error) {
+        // console.log(error);
+        const errorArray = error.details.map(detail => { [detail.path[0]]: detail.message });
+        console.log(errorArray);
+        throw new ApiError(400, 'Profile update validation failed.', errorArray); // 400: Bad Request, means server cannot process the request because of a client-side error
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                fullName,
+                username: username.toLowerCase(),
+                email,
+                gender
+            }
+        },
+        {
+            returnDocument: 'after'
+        }
+    ).select('-password -refreshToken');
+
+    if(!user) {
+        throw new ApiError(500, 'Unable to update the user details, please try again.');
+    }
+
+    return res.status(200).json(
+        throw new ApiResponse(200, user, 'Profile updated successfully.')
+    );
 });
 
 
 
 ////////////////////////////////  UPDATE PROFILE AVATAR  ////////////////////////////////
 const updateProfileAvatar = asyncHandler(async (req, res) => {
+    const avatarOnLocalPath = req.file?.path;
 
+    if(!avatarOnLocalPath) {
+        throw new ApiError(400, 'Avatar image is required.');
+    }
+
+    const avatarOnCloudinary = await cloudinaryUploader(avatarOnLocalPath, subFolder);
+
+    if(!avatarOnCloudinary.secure_url) {
+        throw new ApiError(400, 'Unable to upload the avatar image, please try again.');
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: { avatar: avatarOnCloudinary.secure_url }
+        },
+        { returnDocument: 'after' }
+    ).select('-password -refreshToken');
+
+    return res.status(200).json(
+        throw new ApiResponse(200, user, 'Avatar image is updated successfully.')
+    );
 });
 
 
 
 ////////////////////////////////  UPDATE PROFILE COVERIMAGE  ////////////////////////////////
 const updateProfileCoverImage = asyncHandler(async (req, res) => {
+    const coverImageOnLocalPath = req.file?.path;
 
+    if(!coverImageOnLocalPath) {
+        throw new ApiError(400, 'Cover image is required.');
+    }
+
+    const coverImageOnCloudinary = await cloudinaryUploader(coverImageOnLocalPath, subFolder);
+
+    if(!coverImageOnCloudinary.secure_url) {
+        throw new ApiError(400, 'Unable to upload the cover image, please try again.');
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: { coverImage: coverImageOnCloudinary.secure_url }
+        },
+        { returnDocument: 'after' }
+    ).select('-password -refreshToken');
+
+    return res.status(200).json(
+        throw new ApiResponse(200, user, 'Cover image is updated successfully.')
+    );
 });
 
 

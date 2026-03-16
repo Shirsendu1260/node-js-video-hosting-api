@@ -34,7 +34,7 @@ router.route('/sign-up').post(
     upload.fields([...]) — tells Multer to look for two specific file fields in the incoming multipart/form-data request:
 	avatar -> max 1 file
 	coverImage -> max 1 file
-	After Multer processes them, your signUpUser function can access them via req.files.avatar[0] and req.files.coverImage[0].
+	After Multer processes them, signUpUser function can access them via req.files.avatar[0] and req.files.coverImage[0].
 	*/
 
 	/*
@@ -49,7 +49,7 @@ router.route('/sign-up').post(
 	*/
 
 	/*
-	Multer is middleware — meaning it runs before your controller and attaches data to the req object (req.files. 
+	Multer is middleware — meaning it runs before your controller and attaches data to the req object (req.files). 
 	This is the standard Express pattern: middleware enriches the request, controller uses it. */
 
 	upload.fields([
@@ -75,10 +75,10 @@ router.route('/refresh-access-token').post(refreshAccessToken);
 // No need to apply middleware 'verifyJWT' as checking is already done in this routes's controller function
 
 router.route('/get-auth-user').get(verifyJWT, getAuthUser);
-router.route('/update-profile-details').post(verifyJWT, updateProfileDetails);
-router.route('/update-profile-avatar').post(verifyJWT, upload.fields([{ name: 'avatar', maxCount: 1 }]), updateProfileAvatar);
-router.route('/update-profile-coverimage').post(verifyJWT, upload.fields([{ name: 'coverImage', maxCount: 1 }]), updateProfileCoverImage);
-router.route('/change-password').post(verifyJWT, changePassword);
+router.route('/update-profile-details').patch(verifyJWT, updateProfileDetails);
+router.route('/update-profile-avatar').patch(verifyJWT, upload.single('avatar'), updateProfileAvatar); // upload.single('avatar'): Upload single file via 'avatar' field
+router.route('/update-profile-coverimage').patch(verifyJWT, upload.single('coverImage'), updateProfileCoverImage);
+router.route('/change-password').patch(verifyJWT, changePassword);
 
 
 
