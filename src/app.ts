@@ -4,7 +4,7 @@ import cors from 'cors';
 import { DATA_LIMIT } from './constants.js';
 import userRouter from './routes/user.routes.js';
 
-const app = express();
+const app = express(); // TS automatically infers the type of app as 'Express' from the express() call
 
 
 

@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
+import type { UploadApiResponse, UploadApiOptions } from "cloudinary"
 
 // Configuration
 cloudinary.config({ 
@@ -10,13 +11,16 @@ cloudinary.config({
 });
 
 // Upload file
-const cloudinaryUploader = async (localFilePath, subFolder) => {
+const cloudinaryUploader = async (
+  localFilePath: string,
+  subFolder: string
+): Promise<UploadApiResponse | null> => {
 	try {
 		if(!localFilePath) return null;
 
     // Use the uploaded file's name as the asset's public ID (unique identifier of the uploaded file) and 
     // allow overwriting the asset with new versions
-    const options = {
+    const options: UploadApiOptions = {
       use_filename: true,
       unique_filename: false,
       overwrite: true,
@@ -26,7 +30,7 @@ const cloudinaryUploader = async (localFilePath, subFolder) => {
 
     // Upload the local file from server to Cloudinary cloud storage
     const uploadResult = await cloudinary.uploader.upload(localFilePath, options);
-    fs.unlinkSync(localFilePath);
+    fs.unlinkSync(localFilePath); // Remove (unlink) the saved temporary file from our local server storage
     console.log('UPLOAD SUCCESSFUL ON CLOUDINARY. SOURCE:', uploadResult.secure_url);
 
     // Example of 'uploadResult'
@@ -48,10 +52,20 @@ const cloudinaryUploader = async (localFilePath, subFolder) => {
 
     return uploadResult;
   }
-	catch(error) {
-        console.log('CLOUDINARY UPLOAD ERROR:', error);
-        fs.unlinkSync(localFilePath); // Remove (unlink) the saved temporary file from our local server storage
-        return null;
+	catch(error: unknown) {
+    if(error instanceof Error) {
+      console.log('CLOUDINARY UPLOAD ERROR:', error.message);
+    }
+    else {
+      console.log('CLOUDINARY UPLOAD ERROR:', error);  
+    }
+    
+    f// Check if file exists before trying to delete it
+    if (fs.existsSync(localFilePath)) {
+        fs.unlinkSync(localFilePath)
+    }
+
+    return null;
 	}
 };
 

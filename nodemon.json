@@ -1,0 +1,12 @@
+{
+  // Only watch the src/ folder and .env for changes
+  "watch": ["src", ".env"],
+
+  // Only restart when .ts files change
+  "ext": "ts",
+
+  // When a change is detected, run this command.
+  // ts-node compiles and runs TypeScript directly.
+  // --esm flag enables ES module support so import/export syntax works.
+  "exec": "ts-node --esm src/index.ts"
+}

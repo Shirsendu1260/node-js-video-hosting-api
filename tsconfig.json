@@ -1,0 +1,144 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    // ------File Layout------
+
+    // Where your TypeScript source files live
+    "rootDir": "./src",
+
+    // Where compiled JavaScript output goes
+    "outDir": "./dist",
+
+
+
+
+    // ------Environment Settings------
+
+    // "NodeNext" tells TypeScript to use Node.js native ES module (import/export) system
+    // Must match "type": "module" in package.json
+    "module": "NodeNext",
+
+    // Which version of JavaScript to compile DOWN to
+    // ES2020 supports async/await, optional chaining (?.), nullish coalescing (??) natively
+    // Safe for Node.js v14 and above
+    "target": "ES2020",
+
+    // How TypeScript finds/resolves imported files
+    // "NodeNext" uses Node.js's own module resolution algorithm
+    // IMPORTANT: With NodeNext, we MUST write .js extension in imports
+    "moduleResolution": "NodeNext",
+
+    // "types": [],
+    // For nodejs:
+    // "lib": ["esnext"],
+    // "types": ["node"],
+    // and npm install -D @types/node
+
+    // DO NOT add "types": [] here
+    // Leaving "types" out means TypeScript automatically finds ALL @types/* packages
+    // we installed - @types/node, @types/express, @types/bcrypt etc.
+    // If we set "types": [], it ignores all of them - our installed types become useless
+
+
+
+
+    // ------Other Outputs------
+
+    // Generates a .map file alongside each .js file
+    // Maps compiled JS back to original TS - makes debugging easier
+    // When an error occurs in dist/index.js, debugger shows src/index.ts instead
+    "sourceMap": true,
+
+    // Generates .d.ts files - these are "type declaration" files
+    // They describe our code's types without including the actual logic
+    // Useful if we ever publish this as an npm package
+    "declaration": true,
+
+    // Generates .d.ts.map files alongside declaration files
+    // Maps declaration files back to original TypeScript source
+    // Only useful if declaration is true
+    "declarationMap": true,
+
+
+
+
+    // ------Stricter Typechecking Options------
+
+    // Extra strict check - when we access array/object by index,
+    // TypeScript adds 'undefined' to the type because the index might not exist
+    // Example: const arr = [1,2,3]; const x = arr[5]; // x is number | undefined, not number
+    // Keep this on - it catches real bugs
+    "noUncheckedIndexedAccess": true,
+
+    // "exactOptionalPropertyTypes": true,
+
+
+
+
+    // ------Style Options------
+
+    // "noImplicitReturns": true,
+    // "noImplicitOverride": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "noFallthroughCasesInSwitch": true,
+    // "noPropertyAccessFromIndexSignature": true,
+
+
+
+
+    // ------Recommended Options------
+
+    // Master switch that enables ALL strict checks at once
+    // Includes: strictNullChecks, noImplicitAny, strictFunctionTypes, and more
+    "strict": true,
+
+    // Makes importing CommonJS modules (old-style npm packages) work cleanly
+    // Without this, some imports would need ugly syntax
+    // Without esModuleInterop: import * as express from 'express'  ← ugly
+    // With esModuleInterop:    import express from 'express'       ← clean
+    "esModuleInterop": true,
+
+    // "jsx": "react-jsx",
+
+    // Forces you to be explicit about imports that are only used as types
+    // Example: if you import a type only for annotation, use 'import type'
+    // import type { IUser } from "./models/user.js"  ← correct for type-only imports
+    // import { IUser } from "./models/user.js"       ← error if IUser is only a type
+    // This helps with performance and avoids circular dependency issue
+    "verbatimModuleSyntax": true,
+
+    // Each file is treated as an independent module
+    // Prevents some edge cases with global scripts vs modules
+    "isolatedModules": true,
+
+    // "noUncheckedSideEffectImports": true,
+
+    // Every file is treated as a module even if it has no import/export
+    // Prevents accidental global scope pollution
+    "moduleDetection": "force",
+
+    // Prevents bugs caused by different casing in file names
+    // On Windows: importing "./User" and "./user" both work (Windows is case-insensitive)
+    // On Linux servers: only one works (Linux is case-sensitive)
+    // This option catches that mismatch during development on Windows
+    // So your code doesn't break when deployed to a Linux server
+    "forceConsistentCasingInFileNames": true,
+
+    // Skips type checking inside node_modules folder
+    // Some third-party packages have slightly wrong type definitions
+    // Without this you'd get errors from code you didn't write and can't fix
+    // Safe to keep true always
+    "skipLibCheck": true
+  },
+
+  // Which files/folders to include for compilation
+  // ** means any subfolder, * means any file
+  // So this means: compile every .ts file inside src and all its subfolders
+  "include": ["src/**/*"],
+
+  // Which folders to completely ignore
+  // node_modules: never compile project dependencies
+  // dist: never re-compile already compiled output
+  "exclude": ["node_modules", "dist"]
+}

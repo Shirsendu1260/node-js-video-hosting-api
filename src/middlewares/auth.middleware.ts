@@ -1,32 +1,109 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import jwt from 'jsonwebtoken';
+import type { JwtPayload, Secret } from 'jsonwebtoken';
 import { User } from '../models/user.model.js';
+import type { UserDocument } from "../models/user.model.js";
+import type { Request, Response, NextFunction } from 'express';
 
-export const verifyJWT = asyncHandler(async (req, _, next) => { // 'res' is not used here
+/*
+///////    EXTENDING EXPRESS REQUEST TYPE — TYPESCRIPT CONCEPT    ///////
+
+
+PROBLEM:
+Express's Request type does not have a 'user' property by default.
+Its built-in interface looks like this internally:
+
+    interface Request {
+        body: any
+        cookies: any
+        headers: any
+        ... other built-in properties
+        (NO 'user' property)
+    }
+
+So when you write:
+    req.user = user
+TypeScript errors:
+    "Property 'user' does not exist on type 'Request'"
+
+
+SOLUTION — Declaration Merging:
+TypeScript has a feature where if you declare the same interface
+twice, it MERGES them instead of replacing one with the other.
+
+    // Original (inside express package)
+    interface Request {
+        body: any
+        cookies: any
+        .....
+    }
+
+    // Your addition
+    interface Request {
+        user?: UserDocument
+    }
+
+    // What TypeScript sees after merging both
+    interface Request {
+        body: any
+        cookies: any
+        .....
+        user?: UserDocument  <- your addition merged in
+    }
+
+
+WHY 'declare global' and 'namespace Express':
+Express's Request interface lives inside a NAMESPACE called 'Express'.
+A namespace is just a container that groups related types together
+to avoid name conflicts with other packages.
+
+To merge into Express's Request, you must reach inside that namespace:
+
+    declare global {           "I am adding to global types"
+        namespace Express {    "specifically inside Express's namespace"
+            interface Request { "merge this into the Request interface"
+                user?: UserDocument
+            }
+        }
+    }
+
+After this, req.user is valid everywhere in the project
+without any TypeScript errors.
+*/
+
+declare global {
+    namespace Express {
+        interface Request {
+            user?: UserDocument  // 'user' Will be attached by verifyJWT middleware after token verification
+        }
+    }
+}
+
+export const verifyJWT = asyncHandler(async (req: Request, _: Response, next: NextFunction) => { // 'res' is not used here
 	try {
 		// cookie-parser gave this access of req.cookies
 		// req.cookies? is optional property because cookies might not be available such as in mobile devices
 		// Tokens might come from custom headers
-		// Using Postman or mobile devices, we send tokens in this way -
+		// Using Postman or mobile devices to access a protected route or resource, we send tokens in this way -
 		// Authorization: Bearer <token>
-
-		/* Postman/mobile devicess: Whenever user wants to access a protected route or resource, the user agent should send the JWT access token,
-		typically in the 'Authorization' header using the 'Bearer' schema. The content of the header should look
-		like the following:
-		Authorization: Bearer <accessToken> */
 
 		/* Two sources for the token:
 		Cookies — browser clients (web apps)
 		Authorization header — mobile apps or Postman (Bearer <token>) */
-		const accessToken = req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', ''); // Authorization: Bearer abc123 -> Authorization: abc123
+		const accessToken: string | undefined = req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', ''); // Authorization: Bearer abc123 -> Authorization: abc123
 
-		if(!accessToken) {
+		if(!accessToken) { // if undefined
 		    throw new ApiError(401, 'Unauthorized request.');
 		}
 
+    const secretKey = process.env.ACCESS_TOKEN_SECRET_KEY; // string | undefined at this stage
+    if (!secretKey) throw new ApiError(500, "ACCESS_TOKEN_SECRET_KEY is not defined."); // if undefined
+    const secret: Secret = secretKey; // now safe to assign, guaranteed string
+
 		// Decodes the token and returns the payload
-		const decodedAccessToken = await jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET_KEY);
+    // jwt.verify() returns string | JwtPayload, we cast to JwtPayload to access ._id safely
+		const decodedAccessToken = jwt.verify(accessToken, secret) as JwtPayload;
 
 		// If it passes, means user provided access token and server's access token are same (the user is authorized), 
 		// then the access token is captured in 'decodedAccessToken', else it will not be available
@@ -48,8 +125,9 @@ export const verifyJWT = asyncHandler(async (req, _, next) => { // 'res' is not 
 		Attaches user to req.user
 		next() → controller runs */
 	}
-	catch(error) {
-		throw new ApiError(401, error?.message || 'Error while verifying token!');
+	catch(error: unknown) {
+    if(error instanceof ApiError) throw error;
+		throw new ApiError(401, error instanceof Error ? error.message : 'Error while verifying token!');
 	}
 });
 

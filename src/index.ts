@@ -1,27 +1,29 @@
-import dotenv from 'dotenv';
+import "dotenv/config";  // must be FIRST, loads environment variables from .env into process.env before anything else
 import connectDB from './db/index.js';
 import { app } from './app.js';
-
-// Load environment variables from .env into process.env (not needed if using "-r dotenv/config" in the dev script)
-dotenv.config({ path: './.env' }); // Tries to find .env in root directory
 
 // It returns a promise
 connectDB()
 .then(() => {
     // Listen for any errors emitted by the Express app
-    app.on('error', (error) => {
+    app.on('error', (error: Error) => {
         console.error('APP ERROR:', error);
         process.exit(1);
     });
 
     // Start the Express server on the specified port
-    const PORT = process.env.PORT || 8000;
+    const PORT = Number(process.env.PORT ?? '8000'); // process.env.PORT always returns string | undefined, never a number
     app.listen(PORT, () => {
         console.log(`Server is listening on PORT ${PORT}`);
     });
 })
-.catch((error) => {
-    console.error('MONGODB CONNECTION FAILED:', error);
+.catch((error: unknown) => {
+    if(error instanceof Error) {
+        console.error("MONGODB CONNECTION FAILED:", error.message);
+    }
+    else {
+        console.error("MONGODB CONNECTION FAILED:", error);
+    }
 });
 
 

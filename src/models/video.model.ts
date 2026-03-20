@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import type { Document, Model } from 'mongoose';
 import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 
 /*
@@ -8,7 +9,31 @@ Meaning:
 You can do complex aggregation pipelines and still paginate results easily without manual pagination.
 */
 
-const videoSchema = new mongoose.Schema({
+
+
+
+/******** INTERFACES & TYPES ********/
+
+interface IVideo {
+	videoFile: string,
+	thumbnail?: string,
+	creator: mongoose.Types.ObjectId,
+	title: string,
+    description: string,
+    duration: number,
+    views: number,
+    isPublished: boolean
+}
+
+type VideoDocument = IVideo & Document;
+type VideoModel = Model<VideoDocument>;
+
+
+
+
+/******** SCHEMA ********/
+
+const videoSchema = new mongoose.Schema<VideoDocument, VideoModel>({
 	videoFile: {
 		type: String, // Cloudinary uploaded image's URL
 		required: [true, 'Video file is required']
@@ -47,4 +72,10 @@ const videoSchema = new mongoose.Schema({
 // plugin() -> A reusable function that adds extra functionality to a schema.
 videoSchema.plugin(mongooseAggregatePaginate);
 
-export const Video = mongoose.model('Video', videoSchema);
+
+
+
+/******** MODEL ********/
+
+export const Video = mongoose.model<VideoDocument, VideoModel>('Video', videoSchema);
+export type { VideoDocument, VideoModel };

@@ -1,4 +1,5 @@
 import multer from 'multer';
+import type { Request } from 'express';
 
 // By using Multer's file upload middleware, we will save the uploaded file from forms (multipart/form-data) in public/temp folder
 // Then we will collect the file from that location and upload it to Cloudinary cloud storage
@@ -27,18 +28,26 @@ const storage = multer.diskStorage({
 	*/
 
 	// This function decides where the uploaded file will be saved
-	destination: function (req, file, cb) { // cb -> callback function
+	destination: function (
+		req: Request,
+		file: Express.Multer.File,
+		cb: (error: Error | null, destination: string) => void
+	) { // cb -> callback function
 		cb(null, './public/temp'); // error = null, means No error -> store file in ./public/temp
 
 		/*
 		When Multer receives a file:
-		Client uploads file -> Multer runs destination() -> You call cb(null, './public/temp') 
+		Client uploads file -> Multer runs destination() -> Calls cb(null, './public/temp') 
 		-> Multer saves file there
 		*/
 	},
 
 	// This decides what the saved file name will be
-	filename: function (req, file, cb) {
+	filename: function (
+		req: Request,
+		file: Express.Multer.File,
+		cb: (error: Error | null, filename: string) => void
+	) {
 		const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9); // This creates an unique number
 		cb(null, file.fieldname + '-' + uniqueSuffix);
 	}

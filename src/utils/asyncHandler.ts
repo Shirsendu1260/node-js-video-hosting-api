@@ -1,3 +1,16 @@
+import type { Request, Response, NextFunction, RequestHandler } from "express";
+
+// Type alias for any async Express controller function
+// It takes (req, res, next) and returns a Promise
+type AsyncControllerFunction = (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => Promise<void> | Promise<Response> | void; // Promise<Response> -> Resolves to standard JSON response
+
+
+
+
 // // Using try-catch block
 // const asyncHandler = (requestHandler) => {
 // 	return async (req, res, next) => {
@@ -18,10 +31,16 @@
 // 	}
 // }
 
+
+
+
+
+
 // Using promises
-const asyncHandler = (requestHandler) => {
+const asyncHandler = (requestHandler: AsyncControllerFunction): RequestHandler => {
 	// This returns a new Express middleware function that will be executed in applied routes
-	return (req, res, next) => {
+	// RequestHandler: this is Express's own built-in type for any middleware/controller function (req, res, next) => void
+	return (req: Request, res: Response, next: NextFunction): void => {
 		Promise.resolve(requestHandler(req, res, next)).catch((error) => next(error));
 
 		/*
@@ -56,8 +75,11 @@ const asyncHandler = (requestHandler) => {
 		// }));
 
 		/*
-		Client Request -> Express Route -> asyncHandler(controller) -> controller executes
-		-> Error occurs? -> catch() -> next(error) -> Express Error Middleware
+		Request comes in
+		asyncHandler's returned function runs (req, res, next)
+		Your original controller runs inside Promise.resolve()
+		Success? -> res.json() sends response normally
+		Error?   -> .catch() -> next(error) -> Express error middleware
 		*/
 
 		// asyncHandler wraps async controllers and forwards errors to Express automatically.
@@ -79,59 +101,3 @@ const asyncHandler = (requestHandler) => {
 }
 
 export { asyncHandler };
-
-
-
-
-
-
-
-
-
-
-/*
-const asyncHandler = () => {} // Normal arrow function
-const asyncHandler = (func) => {} // Higher order function, takes a function as input (usually to wrap async functions)
-const asyncHandler = (func) => () => {} // Higher order function, takes a function as input and returns another function
-*/
-
-/*
-Above is same as this ----
-function asyncHandler(func) {
-  return func() {};
-}
-and this ----
-const asyncHandler = (func) => {
-	return () => {}
-}
-*/
-
-/*
-const asyncHandler = (func) => {
-	// Extracting 'req', 'res', 'next' from the provided function 'func' and passing them to the async function
-	return async (req, res, next) = {
-
-	}
-}
-*/
-
-/*
-So asyncHandler:
-Takes your original function
-Returns a new function that Express will actually call
-It’s a wrapper.
-*/
-
-/*
-Why would someone do this?
-Because in frameworks like Express, you often want:
-You give it your original route function
-It returns a new wrapped function
-That wrapped function runs your original one (with error handling, logging, etc.)
-It’s just a wrapper.
-*/
-
-/*
-asyncHandler is basically:
-“Run this controller function. If it suceeds, fine; but if it fails, don’t crash — pass the error to Express.”
-*/

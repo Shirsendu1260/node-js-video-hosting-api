@@ -6,6 +6,8 @@ import { cloudinaryUploader } from '../utils/cloudinary.js';
 import { generateAccessAndRefreshTokens } from '../utils/generateTokens.js';
 import { COOKIE_SEND_OPTIONS } from '../constants.js';
 import jwt from 'jsonwebtoken';
+import type { JwtPayload, Secret } from 'jsonwebtoken';
+import type { IErrorMessage } from "../utils/ApiError.js";
 import Joi from 'joi';
 
 
@@ -17,7 +19,16 @@ const subFolder = 'user/';
 ////////////////////////////////  SIGN UP  ////////////////////////////////
 const signUpUser = asyncHandler(async (req, res) => {
 	/******** Step 1: Get user details from request object ********/
-    const { fullName, username, email, gender, password, confirmedPassword } = req.body;
+    const { fullName, username, email, gender, password, confirmedPassword } = req.body as {
+        fullName: string,
+        username: string,
+        email: string,
+        gender: string,
+        password: string,
+        confirmedPassword: string
+    };
+    // req.body is typed as 'any' by Express by default
+    // We destructure and immediately cast to a known shape
     // console.log(fullName, username, email, gender, password);
 
 
@@ -83,16 +94,18 @@ const signUpUser = asyncHandler(async (req, res) => {
                                 })
     });
 
-    const { error, value } = validatorSchema.validate(
+    const { error } = validatorSchema.validate(
     	{ fullName, username, email, gender, password, confirmedPassword }, 
     	{ abortEarly: false } // Ensures Joi finds all errors, not just the first one
     );
     
     if(error) {
+        // detail.path[0] is typed as 'string | number' by Joi
+        // We cast to string because our field names are always strings
     	// console.log(error);
-    	const errorArray = error.details.map(detail => {
-            return { [detail.path[0]]: detail.message };
-            // '[]' around 'detail.path[0]' tells JS - don't use this as a literal key name, evaluate it as a variable first
+    	const errorArray: IErrorMessage[] = error.details.map(detail => {
+            return { [detail.path[0] as string]: detail.message };
+            // '[]' around 'detail.path[0]' tells TS - don't use this as a literal key name, evaluate it as a variable first
             /* const field = 'email';
             { field: 'msg' }; // Wrong -> gives { field: 'msg' }
             { [field]: 'msg' }; // Correct -> gives { email: 'msg' } */
@@ -108,15 +121,21 @@ const signUpUser = asyncHandler(async (req, res) => {
     }); // Finds the first matching document from 'users' collection with matching username or email
 
     if(existingUser) {
-        throw new ApiError(409, 'User already exists.'); // 409: Conflict, means the requet could not be completed because it conflicts with the current state of the target resource on the server (User data already exists)
+        throw new ApiError(409, 'User already exists.'); // 409: Conflict, means the request could not be completed because it conflicts with the current state of the target resource on the server (Current state i.e. User data already exists)
     }
 
 
 	/******** Step 4: Check for files ********/
-    // Multer gives access of req.files
-    // if req.files?.avatar is undefined, req.files?.avatar[0] will throw error. Safer way:
-    const avatarOnLocalPath = req.files?.avatar?.[0]?.path;
-    const coverImageOnLocalPath = req.files?.coverImage?.[0]?.path;
+    // req.files has two possible shapes depending on which Multer method we use:
+    // upload.single()  ->  Express.Multer.File[]  (array)
+    // upload.fields()  ->  { [fieldname: string]: Express.Multer.File[] }  (object/dictionary)
+    // Since we used upload.fields(), we cast it to the dictionary shape
+    // so TypeScript knows files.avatar and files.coverImage are valid keys
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+
+    // if files?.avatar is undefined, files?.avatar[0] will throw error. Below is the safer way
+    const avatarOnLocalPath = files?.avatar?.[0]?.path;
+    const coverImageOnLocalPath = files?.coverImage?.[0]?.path;
 
     /* It's an object that Multer attaches to the request after processing 
     uploaded files. Without Multer, req.files would be undefined. */
@@ -159,7 +178,7 @@ const signUpUser = asyncHandler(async (req, res) => {
         ]
         // coverImage key won't exist at all
     }
-    That's exactly why req.files?.coverImage?.[0]?.path returns 
+    That's exactly why files?.coverImage?.[0]?.path returns 
     undefined instead of crashing — the key simply doesn't exist. */
 
 
@@ -210,7 +229,11 @@ const signUpUser = asyncHandler(async (req, res) => {
 ////////////////////////////////  SIGN IN  ////////////////////////////////
 const signInUser = asyncHandler(async (req, res) => {
     /******** Step 1: Collect request data ********/
-    let { username, email, password } = req.body;
+    let { username, email, password } = req.body as {
+        username?: string,
+        email?: string,
+        password: string
+    };
     username = username?.toLowerCase();
     email = email?.toLowerCase();
     // console.log(username, email);
@@ -246,29 +269,29 @@ const signInUser = asyncHandler(async (req, res) => {
     });
 
     // Validate
-    const { error, value } = validatorSchema.validate(
+    const { error } = validatorSchema.validate(
         { username, email, password },
         { abortEarly: false }
     )
 
     // Collect error messages
     if(error) {
-        const errorArray = error.details.map(detail => { return { [detail.path[0]]: detail.message }; });
+        const errorArray: IErrorMessage[] = error.details.map(detail => {
+            return { [detail.path[0] as string]: detail.message };
+        });
         console.log(errorArray);
         throw new ApiError(400, 'Sign-in validation failed.', errorArray);
     }
 
 
     /******** Step 3: Find the user in DB ********/
-    const query = {
-        $or: [
-            username ? { username } : null,
-            email ? { email } : null
-        ].filter(Boolean)
-        // filter(Boolean) is a shorthand in JS that removes all 'falsy' values from the array above
-        // If the array was [{ username: '...' }, null], after filtering it becomes [{ username: '...' }]
-    };
-    let user = await User.findOne(query);
+    // Build $or conditions array without null, because Mongoose's TS types don't accept null
+    const orConditions = [];
+    if(username) orConditions.push({ username });
+    if(email) orConditions.push({ email });
+    let user = await User.findOne({
+        $or: orConditions
+    });
     // console.log('User fetching query:', JSON.stringify(query, null, 2));
 
 
@@ -327,7 +350,7 @@ const signOutUser = asyncHandler(async (req, res) => {
 ////////////////////////////////  REFRESH ACCESS TOKEN  ////////////////////////////////
 const refreshAccessToken = asyncHandler(async (req, res) => {
     /******** Step 1: Collect refresh token from cookie ********/
-    const userCollectedRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
+    const userCollectedRefreshToken: string | undefined = req.cookies.refreshToken || req.body.refreshToken;
 
     if(!userCollectedRefreshToken) {
         throw new ApiError(401, 'Unauthorized request.');
@@ -336,7 +359,11 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
     try {
         /******** Step 2: Verify the collected refresh token with one that resides in server (DB) ********/
-        const decodedUserCollectedRefreshToken = await jwt.verify(userCollectedRefreshToken, process.env.REFRESH_TOKEN_SECRET_KEY);
+        const secretKey = process.env.REFRESH_TOKEN_SECRET_KEY;
+        if(!secretKey) throw new ApiError(500, 'REFRESH_TOKEN_SECRET_KEY is not defined.');
+        const secret: Secret = secretKey;
+
+        const decodedUserCollectedRefreshToken = jwt.verify(userCollectedRefreshToken, secret) as JwtPayload;
         // Token in client's cookie -> encrypted
         // Token in DB we stored -> raw
 
@@ -365,8 +392,9 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
                         new ApiResponse(200, { accessToken, refreshToken }, 'Access token is refreshed successfully.')
                     );
     }
-    catch(error) {
-        throw new ApiError(401, error?.message || 'Invalid refresh token');
+    catch(error: unknown) {
+        if (error instanceof ApiError) throw error
+        throw new ApiError(401, error instanceof Error ? error.message : 'Invalid refresh token');
     }
 });
 
@@ -383,7 +411,12 @@ const getAuthUser = asyncHandler(async (req, res) => {
 
 ////////////////////////////////  UPDATE PROFILE  ////////////////////////////////
 const updateProfileDetails = asyncHandler(async (req, res) => {
-    const { fullName, username, email, gender } = req.body;
+    const { fullName, username, email, gender } = req.body as {
+        fullName: string
+        username: string
+        email: string
+        gender: string
+    };
     // console.log(fullName, username, email, gender);
 
     const validatorSchema = Joi.object({
@@ -426,14 +459,16 @@ const updateProfileDetails = asyncHandler(async (req, res) => {
                     })
     });
 
-    const { error, value } = validatorSchema.validate(
+    const { error } = validatorSchema.validate(
         { fullName, username, email, gender }, 
         { abortEarly: false } // Ensures Joi finds all errors, not just the first one
     );
     
     if(error) {
         // console.log(error);
-        const errorArray = error.details.map(detail => { return { [detail.path[0]]: detail.message }; });
+        const errorArray: IErrorMessage[] = error.details.map(detail => {
+            return { [detail.path[0] as string]: detail.message };
+        });
         console.log(errorArray);
         throw new ApiError(400, 'Profile update validation failed.', errorArray); // 400: Bad Request, means server cannot process the request because of a client-side error
     }
@@ -466,7 +501,8 @@ const updateProfileDetails = asyncHandler(async (req, res) => {
 
 ////////////////////////////////  UPDATE PROFILE AVATAR  ////////////////////////////////
 const updateProfileAvatar = asyncHandler(async (req, res) => {
-    const avatarOnLocalPath = req.file?.path;
+    const file = req.file as Express.Multer.File | undefined;
+    const avatarOnLocalPath = file?.path;
 
     if(!avatarOnLocalPath) {
         throw new ApiError(400, 'Avatar image is required.');
@@ -474,14 +510,15 @@ const updateProfileAvatar = asyncHandler(async (req, res) => {
 
     const avatarOnCloudinary = await cloudinaryUploader(avatarOnLocalPath, subFolder);
 
-    if(!avatarOnCloudinary.secure_url) {
+    // In avatarOnCloudinary?.secure_url, added optional chaining because cloudinaryUploader returns UploadApiResponse | null, so it won't crash
+    if(!avatarOnCloudinary?.secure_url) {
         throw new ApiError(400, 'Unable to upload the avatar image, please try again.');
     }
 
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
-            $set: { avatar: avatarOnCloudinary.secure_url }
+            $set: { avatar: avatarOnCloudinary?.secure_url }
         },
         { returnDocument: 'after' }
     ).select('-password -refreshToken');
@@ -495,7 +532,8 @@ const updateProfileAvatar = asyncHandler(async (req, res) => {
 
 ////////////////////////////////  UPDATE PROFILE COVERIMAGE  ////////////////////////////////
 const updateProfileCoverImage = asyncHandler(async (req, res) => {
-    const coverImageOnLocalPath = req.file?.path;
+    const file = req.file as Express.Multer.File | undefined;
+    const coverImageOnLocalPath = file?.path;
 
     if(!coverImageOnLocalPath) {
         throw new ApiError(400, 'Cover image is required.');
@@ -503,14 +541,15 @@ const updateProfileCoverImage = asyncHandler(async (req, res) => {
 
     const coverImageOnCloudinary = await cloudinaryUploader(coverImageOnLocalPath, subFolder);
 
-    if(!coverImageOnCloudinary.secure_url) {
+    // In coverImageOnCloudinary?.secure_url, added optional chaining because cloudinaryUploader returns UploadApiResponse | null, so it won't crash
+    if(!coverImageOnCloudinary?.secure_url) {
         throw new ApiError(400, 'Unable to upload the cover image, please try again.');
     }
 
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
-            $set: { coverImage: coverImageOnCloudinary.secure_url }
+            $set: { coverImage: coverImageOnCloudinary?.secure_url }
         },
         { returnDocument: 'after' }
     ).select('-password -refreshToken');
@@ -525,11 +564,19 @@ const updateProfileCoverImage = asyncHandler(async (req, res) => {
 ////////////////////////////////  CHANGE PASSWORD  ////////////////////////////////
 const changePassword = asyncHandler(async (req, res) => {
     /******** Step 1: Collect data ********/
-    const { oldPassword, newPassword, confirmedPassword } = req.body;
+    const { oldPassword, newPassword, confirmedPassword } = req.body as {
+        oldPassword: string
+        newPassword: string
+        confirmedPassword: string
+    };
 
 
     /******** Step 2: As user is logged in, gather user details ********/
     const user = await User.findById(req.user?._id);
+
+    if (!user) {
+        throw new ApiError(404, "User not found.");
+    }
 
 
     /******** Step 3: Validate given passwords ********/

@@ -1,11 +1,13 @@
 {
   "name": "node-js-video-hosting-api",
   "version": "1.0.0",
-  "description": "A video hosting backend API project built with Node.js, Express, and MongoDB featuring secure JWT auth and Cloudinary integration.",
-  "main": "src/index.js",
+  "description": "A video hosting backend API project built with Node.js, Express, TypeScript, and MongoDB featuring secure JWT auth and Cloudinary integration.",
+  "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon -r dotenv/config src/index.js"
+    "dev": "nodemon",
+    "build": "tsc",
+    "start": "node dist/index.js"
   },
   "repository": {
     "type": "git",
@@ -14,9 +16,10 @@
   "keywords": [
     "Node.js",
     "Express",
+    "TypeScript",
+    "JWT",
     "MongoDB",
-    "Mongoose",
-    "JavaScript"
+    "Mongoose"
   ],
   "author": "Shirsendu Mali",
   "license": "ISC",
@@ -25,8 +28,17 @@
   },
   "homepage": "https://github.com/Shirsendu1260/node-js-video-hosting-api#readme",
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.1.0",
+    "@types/node": "^25.5.0",
     "nodemon": "^3.1.14",
-    "prettier": "^3.8.1"
+    "prettier": "^3.8.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
