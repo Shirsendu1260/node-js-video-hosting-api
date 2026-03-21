@@ -1,8 +1,8 @@
 # Node.js Video Hosting Backend API
 
-A backend API project for a video hosting platform, built with Node.js, Express, and TypeScript. Handles secure user authentication, media upload and management, and data aggregation — with a focus on clean structure and maintainable code.
+A backend API project for a video hosting platform, built with Node.js, Express, TypeScript, and MongoDB. Handles secure JWT authentication, media upload and management, and data aggregation — with a focus on clean structure and maintainable code.
 
-> Inspired by the *Chai aur Backend series* — independently refactored from JavaScript to TypeScript, with improved validation logic and custom interfaces.
+> Inspired by the *Chai aur Backend series* — independently refactored from JavaScript to TypeScript, with Joi validation logic and custom interfaces & controllers.
 
 ---
 
@@ -10,7 +10,7 @@ A backend API project for a video hosting platform, built with Node.js, Express,
 
 - **TypeScript Throughout** — Static typing across the entire codebase with custom interfaces and utility types.
 - **JWT Authentication** — Access and refresh token flow with HttpOnly cookie storage.
-- **Request Validation** — Joi validation middleware runs before business logic on all incoming requests.
+- **Request Validation** — Joi validation runs before business logic on all incoming requests.
 - **Media Uploads** — Avatars, cover images, and video assets handled via Multer and stored on Cloudinary.
 - **MongoDB Aggregations** — Pipelines for subscriber counts, channel stats, and watch history queries.
 - **Consistent API Responses** — Custom `ApiError` and `ApiResponse` classes for predictable, uniform responses across all endpoints.
@@ -132,7 +132,7 @@ All endpoints return a consistent structure.
 {
   "statusCode": 200,
   "data": { ... },
-  "message": "User fetched successfully",
+  "message": "User fetched successfully.",
   "success": true
 }
 ```
@@ -141,7 +141,7 @@ All endpoints return a consistent structure.
 ```json
 {
   "statusCode": 401,
-  "message": "Unauthorized request",
+  "message": "Unauthorized request.",
   "success": false,
   "errors": []
 }
