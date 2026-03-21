@@ -60,7 +60,7 @@ const cloudinaryUploader = async (
       console.log('CLOUDINARY UPLOAD ERROR:', error);  
     }
     
-    f// Check if file exists before trying to delete it
+    // Check if file exists before trying to delete it
     if (fs.existsSync(localFilePath)) {
         fs.unlinkSync(localFilePath)
     }

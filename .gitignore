@@ -77,6 +77,9 @@ web_modules/
 .cache
 .parcel-cache
 
+# TS Builds
+/dist
+
 # Next.js build output
 .next
 out
