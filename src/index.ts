@@ -5,16 +5,17 @@ import { app } from './app.js';
 // It returns a promise
 connectDB()
 .then(() => {
-    // Listen for any errors emitted by the Express app
-    app.on('error', (error: Error) => {
-        console.error('APP ERROR:', error);
-        process.exit(1);
+    // Start the Express server on the specified port
+    // app.listen returns a Node.js http.Server instance
+    const PORT = Number(process.env.PORT ?? '8000'); // process.env.PORT always returns string | undefined
+    const server = app.listen(PORT, () => {
+        console.log(`Server is listening on PORT ${PORT}`);
     });
 
-    // Start the Express server on the specified port
-    const PORT = Number(process.env.PORT ?? '8000'); // process.env.PORT always returns string | undefined, never a number
-    app.listen(PORT, () => {
-        console.log(`Server is listening on PORT ${PORT}`);
+    // Listen for any errors (Node system errors or standard JS errors) emitted by server
+    server.on('error', (error: NodeJS.ErrnoException | Error) => {
+        console.error('SERVER ERROR:', error);
+        process.exit(1);
     });
 })
 .catch((error: unknown) => {
