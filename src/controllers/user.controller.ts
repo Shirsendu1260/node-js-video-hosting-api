@@ -2,7 +2,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { User } from '../models/user.model.js';
-import { cloudinaryUploader } from '../utils/cloudinary.js';
+import { cloudinaryUploader, cloudinaryDeleter } from '../utils/cloudinary.js';
 import { generateAccessAndRefreshTokens } from '../utils/generateTokens.js';
 import { COOKIE_SEND_OPTIONS } from '../constants.js';
 import jwt from 'jsonwebtoken';
@@ -292,7 +292,6 @@ const signInUser = asyncHandler(async (req, res) => {
     let user = await User.findOne({
         $or: orConditions
     });
-    // console.log('User fetching query:', JSON.stringify(query, null, 2));
 
 
     /******** Step 4: If user exists, check entered password is correct or not ********/
@@ -508,6 +507,16 @@ const updateProfileAvatar = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Avatar image is required.');
     }
 
+    const oldAvatarUrl = req.user?.avatar;
+    if(!oldAvatarUrl) throw new ApiError(400, "Avatar URL not found.");
+
+    // Delete old uploaded avatar image from cloudinary
+    // Avatar url cannot be absent in db for each user
+    const isOldAvatarDeletedFromCloudinary = await cloudinaryDeleter(oldAvatarUrl);
+    if(!isOldAvatarDeletedFromCloudinary) {
+        throw new ApiError(400, 'Unable to delete the old uploaded avatar image, please try again.');
+    }
+
     const avatarOnCloudinary = await cloudinaryUploader(avatarOnLocalPath, subFolder);
 
     // In avatarOnCloudinary?.secure_url, added optional chaining because cloudinaryUploader returns UploadApiResponse | null, so it won't crash
@@ -537,6 +546,16 @@ const updateProfileCoverImage = asyncHandler(async (req, res) => {
 
     if(!coverImageOnLocalPath) {
         throw new ApiError(400, 'Cover image is required.');
+    }
+
+    const oldCoverImgUrl = req.user?.coverImage;
+    if(oldCoverImgUrl) {
+        // Delete old uploaded cover image from cloudinary
+        // Cover image url may or may not present in db for each user
+        const isOldAvatarDeletedFromCloudinary = await cloudinaryDeleter(oldCoverImgUrl);
+        if(!isOldAvatarDeletedFromCloudinary) {
+            throw new ApiError(400, 'Unable to delete the old uploaded cover image, please try again.');
+        }
     }
 
     const coverImageOnCloudinary = await cloudinaryUploader(coverImageOnLocalPath, subFolder);

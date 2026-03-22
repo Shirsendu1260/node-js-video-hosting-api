@@ -18,13 +18,11 @@ const cloudinaryUploader = async (
 	try {
 		if(!localFilePath) return null;
 
-    // Use the uploaded file's name as the asset's public ID (unique identifier of the uploaded file) and 
-    // allow overwriting the asset with new versions
     const options: UploadApiOptions = {
-      use_filename: true,
-      unique_filename: false,
-      overwrite: true,
-      resource_type: 'auto', // Automatically determine filetype
+      use_filename: true, // Use original filename as public_id (unique identifier of the uploaded file)
+      unique_filename: false, // Don't append random suffix to filename
+      overwrite: true, // Overwrite if same filename already exists
+      resource_type: "auto", // Auto-detect file type (image, video, raw)
       folder: 'node-video-hosting-backend-uploads/' + subFolder
     };
 
@@ -69,4 +67,51 @@ const cloudinaryUploader = async (
 	}
 };
 
-export { cloudinaryUploader };
+// Delete uploaded file
+const cloudinaryDeleter = async (cloudinaryImgUrl: string): Promise<boolean> => {
+  try {
+    if(!cloudinaryImgUrl) return false;
+
+    // Extract public_id from the Cloudinary URL
+    // URL example: https://res.cloudinary.com/cloud_name/image/upload/v1234567890/folder/subfolder/filename.jpg
+    
+    const indexOfUpload = cloudinaryImgUrl.indexOf("/upload/");
+    if (indexOfUpload === -1) {
+        console.log("CLOUDINARY DELETE ERROR: Invalid Cloudinary URL");
+        return false;
+    }
+
+    // Slice everything after '/upload/' (+8 because '/upload/' is 8 characters)
+    // Result: v1234567890/folder/subfolder/filename.jpg  (version may or may not exist)
+    const afterUpload = cloudinaryImgUrl.slice(indexOfUpload + 8);
+
+    // Remove version prefix if present ('v' followed by digits and a slash)
+    // v1234567890/folder/subfolder/filename.jpg -> folder/subfolder/filename.jpg
+    const withoutVersion = afterUpload.replace(/^v\d+\//, '');
+
+    // Remove file extension using lastIndexOf to handle filenames that contain dots
+    // e.g. "my.photo.jpg" -> "my.photo" not "my"
+    const indexOfLastDot = withoutVersion.lastIndexOf('.');
+    const publicId = withoutVersion.slice(0, indexOfLastDot);
+    // Final publicId: node-video-hosting-backend-uploads/user/filename
+    // console.log(publicId);
+
+    await cloudinary.uploader.destroy(publicId);
+    console.log('DELETE SUCCESSFUL FROM CLOUDINARY. PUBLIC ID:', publicId);
+
+    return true;
+  }
+  catch(error: unknown) {
+    // Don't throw error as it could block the main code that started running before it
+    if(error instanceof Error) {
+      console.log('CLOUDINARY DELETE ERROR:', error.message);
+    }
+    else {
+      console.log('CLOUDINARY DELETE ERROR:', error);  
+    }
+
+    return false;
+  }
+}
+
+export { cloudinaryUploader, cloudinaryDeleter };
