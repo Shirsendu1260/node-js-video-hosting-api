@@ -624,6 +624,116 @@ const changePassword = asyncHandler(async (req, res) => {
 
 
 
+////////////////////////////////  GET CHANNEL PROFILE  ////////////////////////////////
+const getUserChannelDetails = asyncHandler(async (req, res) => {
+    /******** Step 1: Collect username from url parameters ********/
+    let { username } = req.params as {
+        username: string
+    };
+    username = username?.trim().toLowerCase();
+
+    if(!username) {
+        throw new ApiError(400, 'Invalid or missing username.');
+    }
+
+
+    /******** Step 2: Collect channel details of user through aggregation pipelines ********/
+    const userChannel = await User.aggregate([
+        // Stage 1: Filter document that has given matching username
+        {
+            $match: {
+                username: username
+            }
+        },
+
+        // Stage 2: Lookup (join) with 'subscriptions' collections to get subscribers
+        // Look into 'subscriptions' where THIS logged in user is the 'channel'.
+        // Returns: subscribers: [ {subscriber: ID, channel: ID}, ... ]
+        {
+            $lookup: {
+                from: 'subscriptions',
+                localField: '_id', // _id of 'users' collections
+                foreignField: 'channel', // 'channel' of 'subscriptions' collections that is basically '_id' from 'users'
+                as: 'subscribers'
+                // FORMULA: In this model, find the documents to count SUBSCRIBERs that has matching CHANNEL
+            }
+        },
+
+        // Stage 3: Lookup (join) with subscriptions collections to get subscribed channels
+        // Look into 'subscriptions' where THIS user is the 'subscriber'.
+        // Returns: subscribedTo: [ {subscriber: ID, channel: ID}, ... ]
+        {
+            $lookup: {
+                from: 'subscriptions',
+                localField: '_id', // _id of 'users' collections
+                foreignField: 'subscriber', // 'subscriber' of 'subscriptions' collections that is basically '_id' from 'users'
+                as: 'subscribedChannels'
+                // FORMULA: In this model, find the documents to count subscribed CHANNELs of a user that has matching SUBSCRIBER
+            }
+        },
+
+        // Stage 4: Add counts for 'subscribers' and 'subscribedChannels' as fields
+        // $size: Counts the elements in the arrays from Stage 2 & 3.
+        // $in: Checks if the Logged-in User's ID exists in the subscribers list.
+        {
+            $addFields: {
+                subscribersCount: {
+                    $size: '$subscribers'
+                },
+                subscribedChannelsCount: {
+                    $size: '$subscribedChannels'
+                },
+                isSubscribed: {
+                    $cond: {
+                        // If logged in user present in our derived subcribers documents
+                        if: { $in: [req.user?._id, '$subscribers.subscriber'] },
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        // EXAMPLE OF STAGE 4 LOGIC:
+        // If 'subscribers' array is: [ {subscriber: "UserA"}, {subscriber: "UserB"} ]
+        // And req.user._id is "UserA"
+        // -> $in ["UserA", ["UserA", "UserB"]] returns TRUE.
+
+        // Step 5: Include only the specified fields
+        {
+            $project: {
+                // _id is already included unless we specifically exclude (1 means include, 0 means exclude)
+                fullName: 1,
+                username: 1,
+                email: 1,
+                avatar: 1,
+                coverImage: 1,
+                createdAt: 1,
+                subscribersCount: 1,
+                subscribedChannelsCount: 1,
+                isSubscribed: 1
+            }
+        }
+    ]);
+    console.log(userChannel); // An array, which will consist only one element i.e. the channel detail we constructed
+
+    if(userChannel?.length < 1) {
+        throw new ApiError(404, 'Channel not found.');
+    }
+
+    const channelData = userChannel[0];
+    if(!channelData) {
+        throw new ApiError(404, 'Channel not found.');
+    }
+
+
+    /******** Step 3: Gather the only element from the array and return a successful response ********/
+    return res.status(200).json(
+        new ApiResponse(200, userChannel[0], 'Channel fetched successfully.')
+    );
+});
+
+
+
 export { 
     signUpUser, 
     signInUser, 
@@ -633,5 +743,6 @@ export {
     updateProfileDetails, 
     updateProfileAvatar, 
     updateProfileCoverImage, 
-    changePassword
+    changePassword,
+    getUserChannelDetails
 };
