@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import type { JwtPayload, Secret } from 'jsonwebtoken';
 import type { IErrorMessage } from "../utils/ApiError.js";
 import Joi from 'joi';
+import mongoose from 'mongoose';
 
 
 
@@ -694,7 +695,7 @@ const getUserChannelDetails = asyncHandler(async (req, res) => {
             }
         },
         // EXAMPLE OF STAGE 4 LOGIC:
-        // If 'subscribers' array is: [ {subscriber: "UserA"}, {subscriber: "UserB"} ]
+        // If 'subscribers' array is: [ {subscriber: "UserA", channel: "XY"}, {subscriber: "UserB", channel: "XY"} ]
         // And req.user._id is "UserA"
         // -> $in ["UserA", ["UserA", "UserB"]] returns TRUE.
 
@@ -714,7 +715,7 @@ const getUserChannelDetails = asyncHandler(async (req, res) => {
             }
         }
     ]);
-    console.log(userChannel); // An array, which will consist only one element i.e. the channel detail we constructed
+    console.log(userChannel); // An array, which will consist only one object i.e. the channel detail we constructed
 
     if(userChannel?.length < 1) {
         throw new ApiError(404, 'Channel not found.');
@@ -734,6 +735,134 @@ const getUserChannelDetails = asyncHandler(async (req, res) => {
 
 
 
+////////////////////////////////  GET WATCH HISTORY  ////////////////////////////////
+const getWatchHistory = asyncHandler(async (req, res) => {
+    /******** Step 1: Get watch history through aggregation pipelines ********/
+    const user = await User.aggregate([
+        // Stage 1: Filter document that belongs to the logged in user
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(req.user?._id)
+                // This is necessary because, in an aggregation pipeline, 
+                // Mongoose doesn't automatically cast string IDs into ObjectIDs 
+                // like it does in find() or findById()
+            }
+        },
+
+        // Stage 2: lookup to get watched videos from 'videos' collection using a left outer join
+        {
+            // Main Lookup: It looks at the 'watchHistory' array (filled with video IDs) in the User document 
+            // and finds the matching documents in the videos collection
+            $lookup: {
+                from: 'videos',
+                localField: 'watchHistory', // from 'users'
+                foreignField: '_id', // from 'videos'
+                as: 'watchHistory',
+
+                // Nested Pipeline: Inside the video lookup, it performs another lookup. For every video found, 
+                // it goes to the users collection to find the creator of that video
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'creator', // from 'videos'
+                            foreignField: '_id', // from 'users'
+                            as: 'creator',
+
+                            // Nested Projection: Inside the creator lookup, it uses $project to ensure it only grabs the username, 
+                            // fullName, and avatar. (This is a security best practice so you don't accidentally leak passwords 
+                            // or email addresses).
+                            pipeline: [
+                                {
+                                    $project: {
+                                        username: 1,
+                                        fullName: 1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+
+                    // $addFields with $first: Since $lookup always returns an array (even if there is only one creator), 
+                    // $first: '$creator' converts that array into a single object for easier use in the frontend
+                    {
+                        $addFields: {
+                            creator: {
+                                $first: '$creator'
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+
+        // Stage 3: Only return the watchHistory field in the final result
+        {
+            $project: {
+                watchHistory: 1
+            }
+        }
+
+        // Example output of 'user'
+        /*
+        [
+          {
+            "_id": "65f1a2b3c4d5e6f7a8b90123",
+            "watchHistory": [
+              {
+                "_id": "75a2b3c4d5e6f7a8b9012345",
+                "title": "How to learn Node.js in 2026",
+                "description": "A comprehensive guide to backend development.",
+                "thumbnail": "https://cloudinary.com/video_thumb_1.jpg",
+                "videoFile": "https://cloudinary.com/video_1.mp4",
+                "duration": 620,
+                "views": 1500,
+                "owner": {
+                  "_id": "85c3d4e5f6a7b8c9d0e1f234",
+                  "username": "sarmaji",
+                  "fullName": "S Sarma",
+                  "avatar": "https://cloudinary.com/avatar_ssm.png"
+                },
+                "createdAt": "2026-03-20T10:00:00.000Z"
+              },
+              {
+                "_id": "75a2b3c4d5e6f7a8b9012346",
+                "title": "MongoDB Aggregation Explained",
+                "description": "Mastering the pipeline stages.",
+                "thumbnail": "https://cloudinary.com/video_thumb_2.jpg",
+                "videoFile": "https://cloudinary.com/video_2.mp4",
+                "duration": 450,
+                "views": 890,
+                "owner": {
+                  "_id": "95d4e5f6a7b8c9d0e1f23456",
+                  "username": "shirsendu_coder",
+                  "fullName": "S Mali",
+                  "avatar": "https://cloudinary.com/avatar_sm.png"
+                },
+                "createdAt": "2026-03-22T14:30:00.000Z"
+              }
+            ]
+          }
+        ]
+        */
+    ]);
+
+    if (!user[0]) {
+        throw new ApiError(404, "User not found.");
+    }
+
+    const watchHistoryData = user[0];
+
+
+    /******** Step 2: Return successful json response with the videos documents ********/
+    return res.status(200).json(
+        new ApiResponse(200, watchHistoryData, 'Watch history fetched successfully.')
+    );
+});
+
+
+
 export { 
     signUpUser, 
     signInUser, 
@@ -744,5 +873,6 @@ export {
     updateProfileAvatar, 
     updateProfileCoverImage, 
     changePassword,
-    getUserChannelDetails
+    getUserChannelDetails,
+    getWatchHistory
 };

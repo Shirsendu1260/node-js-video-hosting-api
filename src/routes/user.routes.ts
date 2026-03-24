@@ -8,7 +8,9 @@ import {
     updateProfileDetails, 
     updateProfileAvatar, 
     updateProfileCoverImage, 
-    changePassword
+    changePassword,
+    getUserChannelDetails,
+    getWatchHistory
 } from '../controllers/user.controller.js';
 import { upload } from '../middlewares/multer.middleware.js';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
@@ -62,6 +64,9 @@ router.route('/sign-up').post(
 
 router.route('/sign-in').post(signInUser);
 
+// As in the controller, we used req.params to get 'username', so here also we need to use 'username' with ':' as a prefix
+router.route('/channel/:username').get(getUserChannelDetails);
+
 
 
 ////////////////////////////////  AUTHENTICATED ROUTES  ////////////////////////////////
@@ -79,7 +84,7 @@ router.route('/update-profile-details').patch(verifyJWT, updateProfileDetails);
 router.route('/update-profile-avatar').patch(verifyJWT, upload.single('avatar'), updateProfileAvatar); // upload.single('avatar'): Upload single file via 'avatar' field
 router.route('/update-profile-coverimage').patch(verifyJWT, upload.single('coverImage'), updateProfileCoverImage);
 router.route('/change-password').patch(verifyJWT, changePassword);
-
+router.route('/watch-history').get(verifyJWT, getWatchHistory);
 
 
 export default router;
