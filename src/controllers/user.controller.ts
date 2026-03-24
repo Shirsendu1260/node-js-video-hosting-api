@@ -647,7 +647,7 @@ const getUserChannelDetails = asyncHandler(async (req, res) => {
         },
 
         // Stage 2: Lookup (join) with 'subscriptions' collections to get subscribers
-        // Look into 'subscriptions' where THIS logged in user is the 'channel'.
+        // Look into 'subscriptions' for documents where THIS username is the 'channel'.
         // Returns: subscribers: [ {subscriber: ID, channel: ID}, ... ]
         {
             $lookup: {
@@ -660,8 +660,8 @@ const getUserChannelDetails = asyncHandler(async (req, res) => {
         },
 
         // Stage 3: Lookup (join) with subscriptions collections to get subscribed channels
-        // Look into 'subscriptions' where THIS user is the 'subscriber'.
-        // Returns: subscribedTo: [ {subscriber: ID, channel: ID}, ... ]
+        // Look into 'subscriptions' for documents where THIS user is the 'subscriber'.
+        // Returns: subscribedChannels: [ {subscriber: ID, channel: ID}, ... ]
         {
             $lookup: {
                 from: 'subscriptions',
@@ -728,7 +728,7 @@ const getUserChannelDetails = asyncHandler(async (req, res) => {
 
     /******** Step 3: Gather the only element from the array and return a successful response ********/
     return res.status(200).json(
-        new ApiResponse(200, userChannel[0], 'Channel fetched successfully.')
+        new ApiResponse(200, channelData, 'Channel fetched successfully.')
     );
 });
 
