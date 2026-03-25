@@ -332,7 +332,7 @@ const signOutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
         req.user?._id, 
         {
-            $set: { refreshToken: undefined } // Makes -> refreshToken: null
+            $unset: { refreshToken: 1 } // Removes this field from the user document
         }, // what to update
         {
             returnDocument: 'after'
