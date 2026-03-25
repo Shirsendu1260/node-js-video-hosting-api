@@ -761,6 +761,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
 
                 // Nested Pipeline: Inside the video lookup, it performs another lookup. For every video found, 
                 // it goes to the users collection to find the creator of that video
+                // PIPELINE FOR DERIVING CREATER (USER) DATA
                 pipeline: [
                     {
                         $lookup: {
@@ -770,7 +771,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
                             as: 'creator',
 
                             // Nested Projection: Inside the creator lookup, it uses $project to ensure it only grabs the username, 
-                            // fullName, and avatar. (This is a security best practice so you don't accidentally leak passwords 
+                            // fullName, and avatar. (This is a security best practice so we don't accidentally leak passwords 
                             // or email addresses).
                             pipeline: [
                                 {
@@ -846,6 +847,18 @@ const getWatchHistory = asyncHandler(async (req, res) => {
           }
         ]
         */
+
+        // ## Full visual flow
+
+        // All Users in DB
+        // $match → Only logged-in user's document
+        // $lookup (videos) → Replace video IDs with full video documents
+        //   For each video:
+        //   $lookup (users) → Replace creator ID with creator document
+        //   $project → Keep only username, fullName, avatar from creator
+        //   $addFields → Convert creator array to single object
+        // $project → Keep only watchHistory field
+        // Final Result: User document with fully populated watch history
     ]);
 
     if (!user[0]) {
