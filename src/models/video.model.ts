@@ -26,7 +26,21 @@ interface IVideo {
 }
 
 type VideoDocument = IVideo & Document;
-type VideoModel = Model<VideoDocument>;
+
+interface VideoModel extends Model<VideoDocument> {
+	aggregatePaginate: any;
+
+	// aggregatePaginate(
+    //     query: mongoose.Aggregate<any>,
+    //     options?: {
+    //         page?: number;
+    //         limit?: number;
+    //         sort?: any;
+    //         customLabels?: any;
+    //         [key: string]: any;
+    //     }
+    // ): Promise<any>;
+}
 
 
 
@@ -43,7 +57,8 @@ const videoSchema = new mongoose.Schema<VideoDocument, VideoModel>({
 	},
 	creator: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: 'User'
+		ref: 'User',
+		required: [true, 'Creator is required']
 	},
 	title: {
 		type: String,
@@ -70,7 +85,7 @@ const videoSchema = new mongoose.Schema<VideoDocument, VideoModel>({
 }, { timestamps: true });
 
 // plugin() -> A reusable function that adds extra functionality to a schema.
-videoSchema.plugin(mongooseAggregatePaginate);
+videoSchema.plugin(mongooseAggregatePaginate as any);
 
 
 

@@ -12,11 +12,13 @@ type SubscriptionModel = Model<SubscriptionDocument>;
 const subscriptionSchema = new mongoose.Schema<SubscriptionDocument, SubscriptionModel>({
 	subscriber: { // User, who is subscribing to another User (Channel)
 		type: mongoose.Schema.Types.ObjectId,
-		ref: 'User'
+		ref: 'User',
+		required: [true, 'Subscriber is required.']
 	},
 	channel: { // User, who is subscribed by another User (Subscriber)
 		type: mongoose.Schema.Types.ObjectId,
-		ref: 'User'
+		ref: 'User',
+		required: [true, 'Channel is required.']
 	}
 }, { timestamps: true });
 
