@@ -3,6 +3,18 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { DATA_LIMIT } from './constants.js';
 import userRouter from './routes/user.routes.js';
+import videoRouter from './routes/video.routes.js';
+import likeRouter from './routes/like.routes.js';
+import subscriptionRouter from './routes/subscription.routes.js';
+import commentRouter from './routes/comment.routes.js';
+import playlistRouter from './routes/playlist.routes.js';
+import postRouter from './routes/post.routes.js';
+import dashboardRouter from './routes/dashboard.routes.js';
+import healthcheckRouter from './routes/healthcheck.routes.js';
+
+
+
+
 
 const app = express(); // TS automatically infers the type of app as 'Express' from the express() call
 
@@ -44,7 +56,15 @@ app.use(cookieParser());
 
 ///// Routes declaration /////
 
-app.use('/api/v1/users', userRouter); // The best practice is to define that we are creating APIs and need to tell their versions in this way
+app.use('/api/v1/user', userRouter); //  /api/v1/ -> API versioning
+app.use('/api/v1/video', videoRouter);
+app.use('/api/v1/like', likeRouter);
+app.use('/api/v1/subscription', subscriptionRouter);
+app.use('/api/v1/comment', commentRouter);
+app.use('/api/v1/playlist', playlistRouter);
+app.use('/api/v1/post', postRouter);
+app.use('/api/v1/dashboard', dashboardRouter);
+app.use('/api/v1/healthcheck', healthcheckRouter);
 
 
 
