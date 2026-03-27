@@ -29,7 +29,7 @@ const cloudinaryUploader = async (
     };
 
     // Upload the local file from server to Cloudinary cloud storage
-    // upload_large automatically splits files into pieces.
+    // upload_large automatically splits files into chunks.
     // If a 5MB chunk fails, it only retries that chunk, not the whole file.
     const uploadResult = await cloudinary.uploader.upload_large(localFilePath, options) as UploadApiResponse;
     fs.unlinkSync(localFilePath); // Remove (unlink) the saved temporary file from our local server storage
