@@ -26,6 +26,13 @@ const cloudinaryUploader = async (
       chunk_size: 5000000, // 5MB per chunks (Ideal for slow connections)
       timeout: 60000, // 60s timeout
       folder: 'node-video-hosting-backend-uploads/' + subFolder
+
+      // On a slow network, here is how our code handles a 200MB upload:
+      // Fragmentation: The file is sliced into 40 chunks (5MB each).
+      // Sequential Resilience: If the connection flickers during chunk #20, only that 5MB piece needs to 
+      //                        retry, not the entire 200MB.
+      // Timeouts: If the network is so slow that a single 5MB chunk takes longer than 60 seconds, 
+      //           the upload will fail and trigger your catch block.
     };
 
     // Upload the local file from server to Cloudinary cloud storage
