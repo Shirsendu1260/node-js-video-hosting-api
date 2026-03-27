@@ -22,7 +22,8 @@ interface IVideo {
     description: string,
     duration: number,
     views: number,
-    isPublished: boolean
+    isPublished: boolean,
+    isShorts: boolean // Is a short format video or not
 }
 
 type VideoDocument = IVideo & Document;
@@ -81,6 +82,11 @@ const videoSchema = new mongoose.Schema<VideoDocument, VideoModel>({
 		type: Boolean,
 		required: true,
 		default: true
+	},
+	isShorts: {
+		type: Boolean,
+		required: true,
+		default: false
 	}
 }, { timestamps: true });
 
