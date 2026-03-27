@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
-import type { UploadApiResponse, UploadApiOptions } from "cloudinary"
+import type { UploadApiResponse, UploadApiOptions } from "cloudinary";
 
 // Configuration
 cloudinary.config({ 
@@ -23,15 +23,19 @@ const cloudinaryUploader = async (
       unique_filename: false, // Don't append random suffix to filename
       overwrite: true, // Overwrite if same filename already exists
       resource_type: "auto", // Auto-detect file type (image, video, raw)
+      chunk_size: 5000000, // 5MB per chunks (Ideal for slow connections)
+      timeout: 60000, // 60s timeout
       folder: 'node-video-hosting-backend-uploads/' + subFolder
     };
 
     // Upload the local file from server to Cloudinary cloud storage
-    const uploadResult = await cloudinary.uploader.upload(localFilePath, options);
+    // upload_large automatically splits files into pieces.
+    // If a 5MB chunk fails, it only retries that chunk, not the whole file.
+    const uploadResult = await cloudinary.uploader.upload_large(localFilePath, options) as UploadApiResponse;
     fs.unlinkSync(localFilePath); // Remove (unlink) the saved temporary file from our local server storage
     console.log('UPLOAD SUCCESSFUL ON CLOUDINARY. SOURCE:', uploadResult.secure_url);
 
-    // Example of 'uploadResult'
+    // Example of 'uploadResult' if type is 'UploadApiResponse'
     /*
     {
       "asset_id": "abc123xyz",
@@ -96,10 +100,15 @@ const cloudinaryDeleter = async (cloudinaryImgUrl: string): Promise<boolean> => 
     // Final publicId: node-video-hosting-backend-uploads/user/filename
     // console.log(publicId);
 
-    await cloudinary.uploader.destroy(publicId);
-    console.log('DELETE SUCCESSFUL FROM CLOUDINARY. PUBLIC ID:', publicId);
+    const { result } = await cloudinary.uploader.destroy(publicId);
+    
+    if (result === 'ok') {
+        console.log('DELETE SUCCESSFUL FROM CLOUDINARY. PUBLIC ID:', publicId);
+        return true;
+    }
 
-    return true;
+    console.log('DELETE ATTEMPTED BUT FILE NOT FOUND ON CLOUDINARY:', publicId);
+    return false;
   }
   catch(error: unknown) {
     // Don't throw error as it could block the main code that started running before it
@@ -107,7 +116,7 @@ const cloudinaryDeleter = async (cloudinaryImgUrl: string): Promise<boolean> => 
       console.log('CLOUDINARY DELETE ERROR:', error.message);
     }
     else {
-      console.log('CLOUDINARY DELETE ERROR:', error);  
+      console.log('CLOUDINARY DELETE ERROR:', error);
     }
 
     return false;
