@@ -14,6 +14,11 @@ const getAllVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
 });
 
+// Get all shorts based on query, sort, pagination
+const getAllShorts = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+});
+
 // Get video, upload to cloudinary, create video
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description } = req.body;
