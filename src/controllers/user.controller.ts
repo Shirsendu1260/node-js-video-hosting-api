@@ -484,7 +484,8 @@ const updateProfileDetails = asyncHandler(async (req, res) => {
             }
         },
         {
-            returnDocument: 'after'
+            returnDocument: 'after',
+            runValidators: true // Enforces Schema validation on update
         }
     ).select('-password -refreshToken');
 
@@ -530,7 +531,10 @@ const updateProfileAvatar = asyncHandler(async (req, res) => {
         {
             $set: { avatar: avatarOnCloudinary?.secure_url }
         },
-        { returnDocument: 'after' }
+        { 
+            returnDocument: 'after',
+            runValidators: true // Enforces Schema validation on update
+        }
     ).select('-password -refreshToken');
 
     return res.status(200).json(
@@ -571,7 +575,10 @@ const updateProfileCoverImage = asyncHandler(async (req, res) => {
         {
             $set: { coverImage: coverImageOnCloudinary?.secure_url }
         },
-        { returnDocument: 'after' }
+        {
+            returnDocument: 'after',
+            runValidators: true // Enforces Schema validation on update
+        }
     ).select('-password -refreshToken');
 
     return res.status(200).json(
@@ -751,7 +758,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
 
         // Stage 2: lookup to get watched videos from 'videos' collection using a left outer join
         {
-            // Main Lookup: It looks at the 'watchHistory' array (filled with video IDs) in the User document 
+            // Main Lookup (video lookup): It looks at the 'watchHistory' array (filled with video IDs) in the User document 
             // and finds the matching documents in the videos collection
             $lookup: {
                 from: 'videos',
@@ -759,7 +766,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
                 foreignField: '_id', // from 'videos'
                 as: 'watchHistory',
 
-                // Nested Pipeline: Inside the video lookup, it performs another lookup. For every video found, 
+                // Nested Pipeline (video lookup): Inside it, it performs another lookup. For every video found, 
                 // it goes to the users collection to find the creator of that video
                 // PIPELINE FOR DERIVING CREATER (USER) DATA
                 pipeline: [
