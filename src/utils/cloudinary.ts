@@ -1,6 +1,13 @@
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
-import type { UploadApiResponse, UploadApiOptions } from "cloudinary";
+import type { UploadApiResponse, UploadApiOptions } from 'cloudinary';
+
+// Adding playback_url in Cloudinary 'UploadApiResponse' type as we will add that later in this code
+declare module 'cloudinary' {
+    interface UploadApiResponse {
+        playback_url?: string
+    }
+}
 
 // Configuration
 cloudinary.config({ 

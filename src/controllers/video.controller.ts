@@ -28,13 +28,13 @@ const getAllVideos = asyncHandler(async (req, res) => {
         isShorts = false, 
         username
     } = req.query as {
-        page: string,
-        limit: string,
-        query: string,
-        sortBy: string,
-        sortType: string, // -1 -> 'desc', 1 -> 'asc'
-        isShorts: string, // true/false as string is passed
-        username: string
+        page?: string,
+        limit?: string,
+        query?: string,
+        sortBy?: string,
+        sortType?: string, // -1 -> 'desc', 1 -> 'asc'
+        isShorts?: string, // true/false as string is passed
+        username?: string
     };
 
     const pageNo = Number(page);
@@ -43,8 +43,10 @@ const getAllVideos = asyncHandler(async (req, res) => {
     const isShortsFlag = (isShorts === 'true') ? true : false;
 
     const sortByOptions = ['views', 'createdAt'];
-    if(!sortByOptions.includes(sortBy)) {
-        sortBy = 'views';
+    if(sortBy) {
+        if(!sortByOptions.includes(sortBy)) {
+            sortBy = 'views';
+        }
     }
 
 
@@ -337,10 +339,6 @@ const publishVideo = asyncHandler(async (req, res) => {
     }
     */
 
-    if(!videoOnCloudinary) {
-        throw new ApiError(400, 'Unable to upload the video file, please try again.');
-    }
-
     let tempIsShorts: boolean = isShorts;
 
     // If video duration is above 60s, it can't be a short video
@@ -579,16 +577,16 @@ const deleteVideo = asyncHandler(async (req, res) => {
         throw new ApiError(403, "You do not have permission to perform this action.");
     }
 
-    // Automatically converts string id to ObjectId and delete the document
-    const videoDeleted = await Video.findByIdAndDelete(decodedVideoId);
-
-    if(!videoDeleted) {
-        throw new ApiError(400, 'Unable to delete the video and its metadata, please try again.');
+    // Delete from Cloudinary first
+    const isOldVideoDeletedFromCloudinary = await cloudinaryDeleter(video.videoFile);
+    if (!isOldVideoDeletedFromCloudinary) {
+        throw new ApiError(400, 'Unable to delete the video from storage, please try again.');
     }
 
-    const isOldVideoDeletedFromCloudinary = await cloudinaryDeleter(video.videoFile); // videoFile => secure_url
-    if(!isOldVideoDeletedFromCloudinary) {
-        throw new ApiError(400, 'Unable to delete the video, please try again.');
+    // Only delete from DB after Cloudinary confirms deletion
+    const videoDeleted = await Video.findByIdAndDelete(decodedVideoId);
+    if (!videoDeleted) {
+        throw new ApiError(500, 'Unable to delete the video metadata, please try again.');
     }
 
     return res.status(200).json(
