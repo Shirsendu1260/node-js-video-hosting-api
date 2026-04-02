@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import type { Document, Model } from 'mongoose';
+import type { Document, AggregatePaginateModel } from 'mongoose';
 import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 
 interface IPost {
@@ -9,21 +9,7 @@ interface IPost {
 }
 
 type PostDocument = IPost & Document;
-
-interface PostModel extends Model<PostDocument> {
-	aggregatePaginate: any;
-
-	// aggregatePaginate(
-    //     query: mongoose.Aggregate<any>,
-    //     options?: {
-    //         page?: number;
-    //         limit?: number;
-    //         sort?: any;
-    //         customLabels?: any;
-    //         [key: string]: any;
-    //     }
-    // ): Promise<any>;
-}
+type PostModel = AggregatePaginateModel<PostDocument>;
 
 const postSchema = new mongoose.Schema<PostDocument, PostModel>({
 	creator: {

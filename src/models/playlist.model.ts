@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import type { Document, Model } from 'mongoose';
+import type { Document, AggregatePaginateModel } from 'mongoose';
 import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 
 interface IPlaylist {
@@ -10,21 +10,7 @@ interface IPlaylist {
 }
 
 type PlaylistDocument = IPlaylist & Document;
-
-interface PlaylistModel extends Model<PlaylistDocument> {
-	aggregatePaginate: any;
-
-	// aggregatePaginate(
-    //     query: mongoose.Aggregate<any>,
-    //     options?: {
-    //         page?: number;
-    //         limit?: number;
-    //         sort?: any;
-    //         customLabels?: any;
-    //         [key: string]: any;
-    //     }
-    // ): Promise<any>;
-}
+type PlaylistModel = AggregatePaginateModel<PlaylistDocument>;
 
 const playlistSchema = new mongoose.Schema<PlaylistDocument, PlaylistModel>({
 	name: {
