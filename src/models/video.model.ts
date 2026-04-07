@@ -28,6 +28,8 @@ interface IVideo {
     description?: string,
     duration: number,
     views: number,
+    likesCount: number,
+ 	dislikesCount: number,
     isPublished: boolean,
     isShorts: boolean // Is a short format video or not
 }
@@ -50,7 +52,7 @@ type VideoDocument = IVideo & Document;
 // }
 
 // We use mongoose's built-in type for aggregate paginate. It automatically let TS knows about 
-// .aggregatePaginate(), .find(), .create(), etc.
+// .aggregatePaginate(), .find(), .create(), etc. are present in the model.
 // By passing <VideoDocument> into AggregatePaginateModel, the plugin now knows that the 
 // result of the pagination will be a list of Video documents, not just a list of 'any'
 type VideoModel = AggregatePaginateModel<VideoDocument>;
@@ -94,6 +96,14 @@ const videoSchema = new mongoose.Schema<VideoDocument, VideoModel>({
 		required: true,
 		default: 0
 	},
+	likesCount: {
+ 		type: Number,
+ 		default: 0
+ 	},
+ 	dislikesCount: {
+ 		type: Number,
+ 		default: 0
+ 	},
 	isPublished: {
 		type: Boolean,
         required: true,

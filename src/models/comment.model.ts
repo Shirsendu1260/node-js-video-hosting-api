@@ -8,7 +8,9 @@ interface IComment {
  	video?: mongoose.Types.ObjectId,
 	post?: mongoose.Types.ObjectId,
  	creator: mongoose.Types.ObjectId,
- 	isChildComment: boolean,
+ 	likesCount: number,
+ 	dislikesCount: number,
+ 	isChildComment: boolean, // isChildComment = true means it's a reply of a parent comment
  	parentComment?: mongoose.Types.ObjectId
 }
 
@@ -33,10 +35,18 @@ const commentSchema = new mongoose.Schema<CommentDocument, CommentModel>({
  		ref: 'User',
  		required: [true, 'Creator is required.']
  	},
+ 	likesCount: {
+ 		type: Number,
+ 		default: 0
+ 	},
+ 	dislikesCount: {
+ 		type: Number,
+ 		default: 0
+ 	},
  	isChildComment: {
  		type: Boolean,
  		default: false,
- 		required: [true, 'Child comment flag is required.']
+ 		required: [true, 'Reply flag is required.']
  	},
  	parentComment: {
  		type: mongoose.Schema.Types.ObjectId,
@@ -45,8 +55,8 @@ const commentSchema = new mongoose.Schema<CommentDocument, CommentModel>({
 }, { timestamps: true });
 
 commentSchema.plugin(mongooseAggregatePaginate as any);
-// Type casted with 'as any' by bypassing a known TS mismatch between newer Mongoose versions and this plugins's
-// older type definitions
+// Type casted with 'as any' by bypassing a known TS mismatch between newer Mongoose versions and 
+// this plugins's older type definitions
 
 export const Comment = mongoose.model<CommentDocument, CommentModel>('Comment', commentSchema);
 export type { CommentDocument, CommentModel };

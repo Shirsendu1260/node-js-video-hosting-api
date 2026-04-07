@@ -21,7 +21,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     /****** Step 1: Collect page, limit, query, sortBy, sortType, and username from the request query ******/
     let { 
         page = 1, 
-        limit = 10, 
+        limit = 4, 
         query, // search keyword
         sortBy, // options -> views, createdAt
         sortType = -1, // By default DESCENDING 
@@ -58,14 +58,14 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
     /****** 
     Step 3: 
-    Filter videos based on creator, shorts flag, publish flag (also with unpublished videos of logged in user), and search keywords.
-    We combine all criteria into one $match stage so MongoDB uses indexes efficiently.
+    Filter videos using $match based on creator, shorts flag, publish flag (also with unpublished videos 
+    of logged in user), and search keywords.
     ******/
     type MatchCondition = {
         creator?: mongoose.Types.ObjectId
         isShorts: boolean, // Utilizes the compound indexes
         isPublished?: boolean, // Utilizes the compound indexes
-        $text?: {
+        $text?: { // Utilizes the text index
             $search: string
         }
     };
@@ -81,9 +81,10 @@ const getAllVideos = asyncHandler(async (req, res) => {
         matchCondition.creator = user._id;
     }
 
-    // If user is not the logged-in user, filter only published videos, 
+    // If user is not the logged-in user, or if he/she is looking at someone else's account
+    // filter only published videos, 
     // else filter published + unpublished (by the logged-in user) videos both
-    if(!req.user) {
+    if(!req.user || (user && user._id.toString() !== req.user._id.toString())) {
         matchCondition.isPublished = true;
     }
 
@@ -99,7 +100,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
         $match: matchCondition
     });
 
-    // Added a 'score' field to rank search results for $sort stage by how well they match the keywords
+    // Added a 'score' field to rank search results for $sort stage (how well the keywords matched)
     if(query) {
         pipeline.push({
             $addFields: {
@@ -114,7 +115,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     // Tokenization: When we search for "NodeJS Backend," MongoDB breaks the string into "NodeJS" and "Backend."
     // Scoring: It looks at our weights. Since we set title: 5 and description: 1, a video with "NodeJS" in 
     //          the title gets a much higher "score" than a video that only mentions it in the description.
-    // Efficiency: Because of the Text Index, MongoDB doesn't 'read' our videos. It looks at its pre-built 
+    // Efficiency: Because of the Text Index, MongoDB doesn't read our videos. It looks at its pre-built 
     //             word map and jumps straight to the IDs of the matching videos.
 
 
@@ -122,7 +123,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     Step 4: Sorts the filtered documents.
     ******/
     type SortStage = {
-        // Record<Key, Value> is a TypeScript utility to define object shapes
+        // Record<Key, Value> is a TypeScript utility to define object structure
         $sort: Record<
             string, // The key: Can be any field name (e.g., 'views', 'createdAt')
             1 | -1 | { $meta: "textScore" } // The value: Must be one of these 3 specific options
@@ -134,7 +135,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     // Initialize it with an empty sort object to satisfy the type
     const sortStage: SortStage = { $sort: {} };
 
-    // If user is searching, the most relevant match must come first
+    // If user is searching, the most relevant matched result must come first
     // We use the 'score' field created in prev. step via $meta: 'textScore'
     // In MongoDB, when sorting by a $meta text score, we don't actually use -1 (score: -1) or 1. While -1 or 1 might 
     // happen to work in some drivers, the standard technical way to do it is to tell MongoDB explicitly 
@@ -196,7 +197,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     /******
     Step 6: Apply pagination and return the result
     We pass the entire pipeline to aggregatePaginate. 
-    It will add the final $skip and $limit stages based on the page and limit.
+    It will add the final $skip and $limit stages based on user's given page and limit.
     ******/
     const options = {
         page: pageNo,
@@ -400,7 +401,7 @@ const getVideoById = asyncHandler(async (req, res) => {
 
 
 // Increments the video view count
-// Called from the frontend only after the video has played for 7 seconds to ensure valid engagement
+// Called from the frontend only after the video has played for 6 seconds to ensure valid engagement
 const incrementVideoView = asyncHandler(async (req, res) => {
     const { videoId } = req.params as {
         videoId: string // Right now base64 encoded
@@ -516,7 +517,7 @@ const updateVideoThumbnail = asyncHandler(async (req, res) => {
     };
 
     const decodedVideoId = getBase64DecodedId(videoId);
-    const videoBeforeUpdate = await Video.findById(decodedVideoId).lean().select('thumbnail');
+    const videoBeforeUpdate = await Video.findById(decodedVideoId).lean().select('_id thumbnail');
 
     const file = req.file as Express.Multer.File | undefined;
     const thumbnailOnLocalPath = file?.path;
@@ -590,7 +591,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
     }
 
     return res.status(200).json(
-        new ApiResponse(200, video, 'Video deleted successfully.')
+        new ApiResponse(200, {}, 'Video deleted successfully.')
     );
 });
 
@@ -610,7 +611,9 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
         [
             {
                 $set: {
-                    // Flips true-false & false-true whatever resides in 'isPublished' field
+                    // Flips true-false & false-true, whatever resides in 'isPublished' field
+                    // To do this we need $not, which is available in aggregation pipelines
+                    // That's why we used that
                     isPublished: { $not: '$isPublished' }
                 }
             }

@@ -5,7 +5,9 @@ import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 interface IPost {
 	creator: mongoose.Types.ObjectId,
 	content: string,
-	image?: string
+	image?: string,
+	likesCount: number,
+ 	dislikesCount: number,
 }
 
 type PostDocument = IPost & Document;
@@ -23,7 +25,15 @@ const postSchema = new mongoose.Schema<PostDocument, PostModel>({
 	},
 	image: {
 		type: String
-	}
+	},
+	likesCount: {
+ 		type: Number,
+ 		default: 0
+ 	},
+ 	dislikesCount: {
+ 		type: Number,
+ 		default: 0
+ 	},
 }, { timestamps: true });
 
 postSchema.plugin(mongooseAggregatePaginate as any);
