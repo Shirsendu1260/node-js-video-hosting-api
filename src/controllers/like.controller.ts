@@ -250,7 +250,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     const limitCount = Number(limit);
 
     if(!req.user) {
-        throw new ApiError(400, 'You are not authenticated to see your liked videos.');
+        throw new ApiError(401, 'You are not authenticated to see your liked videos.');
     }
 
     const videoAggregate = Like.aggregate([

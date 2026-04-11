@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-import type { Document, Model } from 'mongoose';
+import type { Document, AggregatePaginateModel } from 'mongoose';
+import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 
 interface ISubscription {
 	subscriber: mongoose.Types.ObjectId,
@@ -7,20 +8,22 @@ interface ISubscription {
 }
 
 type SubscriptionDocument = ISubscription & Document;
-type SubscriptionModel = Model<SubscriptionDocument>;
+type SubscriptionModel = AggregatePaginateModel<SubscriptionDocument>;
 
 const subscriptionSchema = new mongoose.Schema<SubscriptionDocument, SubscriptionModel>({
-	subscriber: { // User, who is subscribing to another User (Channel)
+	subscriber: { // User, who is subscribing to another User
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'User',
 		required: [true, 'Subscriber is required.']
 	},
-	channel: { // User, who is subscribed by another User (Subscriber)
+	channel: { // User, who is subscribed by another User
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'User',
 		required: [true, 'Channel is required.']
 	}
 }, { timestamps: true });
+
+subscriptionSchema.plugin(mongooseAggregatePaginate as any);
 
 export const Subscription = mongoose.model<SubscriptionDocument, SubscriptionModel>('Subscription', subscriptionSchema);
 export type { SubscriptionDocument, SubscriptionModel };
