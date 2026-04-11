@@ -2,7 +2,7 @@
 
 A backend API project for a video hosting platform, built with Node.js, Express, TypeScript, and MongoDB. Handles secure JWT authentication, media upload and management, and data aggregation — with a focus on clean structure and maintainable code.
 
-> Inspired by the *Chai aur Backend series* — independently refactored from JavaScript to TypeScript, with Joi validation logic and custom interfaces & controllers.
+> Inspired by the *Chai aur Backend* series, independently refactored from JavaScript to TypeScript, with Joi validation logic, API rate limiting, custom interfaces & controllers and many more.
 
 ---
 
@@ -10,9 +10,9 @@ A backend API project for a video hosting platform, built with Node.js, Express,
 
 - **TypeScript Throughout** — Static typing across the entire codebase with custom interfaces and utility types.
 - **JWT Authentication** — Access and refresh token flow with HttpOnly cookie storage.
-- **Request Validation** — Joi validation runs before business logic on all incoming requests.
+- **Request Validation** — Joi validation runs before business logic on all form submits.
 - **Media Uploads** — Avatars, cover images, and video assets handled via Multer and stored on Cloudinary.
-- **MongoDB Aggregations** — Pipelines for subscriber counts, channel stats, and watch history queries.
+- **MongoDB Aggregations** — Pipelines for subscriber counts, channel stats, videos and many more.
 - **Consistent API Responses** — Custom `ApiError` and `ApiResponse` classes for predictable, uniform responses across all endpoints.
 
 ---
@@ -42,7 +42,7 @@ src/
 ├── routes/          # Express route definitions
 ├── utils/           # ApiError, ApiResponse, asyncHandler
 ├── app.ts           # Express app setup
-├── constants.ts     # App-wide constants
+├── constants.ts     # App constants
 └── index.ts         # Server entry point
 ```
 
@@ -106,20 +106,6 @@ npm start
 ## API Reference
 
 **Base URL:** `http://localhost:8000/api/v1`
-
-### User Routes — `/api/v1/users`
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|:----:|-------------|
-| POST | `/sign-up` | ✗ | Register a new user. Accepts `avatar` and `coverImage` as `multipart/form-data` |
-| POST | `/sign-in` | ✗ | Authenticate user, returns access & refresh tokens |
-| POST | `/sign-out` | ✓ | Invalidate session and clear cookies |
-| POST | `/refresh-access-token` | ✗ | Issue a new access token using the refresh token |
-| GET | `/get-auth-user` | ✓ | Fetch the currently authenticated user's profile |
-| PATCH | `/update-profile-details` | ✓ | Update display name, bio, or other text fields |
-| PATCH | `/update-profile-avatar` | ✓ | Replace profile avatar |
-| PATCH | `/update-profile-coverimage` | ✓ | Replace cover image |
-| PATCH | `/change-password` | ✓ | Update account password |
 
 > Protected routes require a valid JWT via HttpOnly cookie or `Authorization: Bearer <token>` header.
 
