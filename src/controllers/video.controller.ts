@@ -78,7 +78,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
     // Filter by creator if username was provided
     if(user) {
-        matchCondition.creator = user._id;
+        matchCondition.creator = new mongoose.Types.ObjectId(user._id);
     }
 
     // If user is not the logged-in user, or if he/she is looking at someone else's account
@@ -148,7 +148,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     // If user is not searching, sort by whatever sortBy (views, createdAt) and sortType (1 or -1) user provided
     else {
         sortStage.$sort = {
-            [sortBy as string]: sortType as 1 | -1
+            [sortBy as string]: sortTypeFinal as 1 | -1
         };
         // TS sees 'sortType' (number) as too broad for the $sort type 
         // which specifically requires exactly 1 or -1 (literal types). 
