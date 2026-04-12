@@ -260,7 +260,7 @@ const publishVideo = asyncHandler(async (req, res) => {
                         .max(5000)
                         .allow('') // Allow empty strings as valid input
                         .messages({
-                            'string.max': 'Username cannot exceed 30 characters.',
+                            'string.max': 'Description cannot exceed 5000 characters.',
                         }),
         isShorts: Joi.boolean()
                         .default(false) // Defaults to false if not provided (means, long format video)
@@ -424,6 +424,25 @@ const incrementVideoView = asyncHandler(async (req, res) => {
         throw new ApiError(500, 'Failed to register a view to this video!')
     }
 
+    // If the viewer is logged in, add this video to his/her watch history
+    // by updating this viewer's User document by pushing this video's id into their watchHistory array
+    if(req.user) {
+        await User.findByIdAndUpdate(
+            req.user._id,
+            {
+                // We are using $addToSet instead of $push because this prevents the same video from 
+                // appearing multiple times in the history, keeping the document small
+                $addToSet: {
+                    watchHistory: video._id
+                }
+            },
+            {
+                returnDocument: 'after',
+                runValidators: true
+            }
+        );
+    }
+
     return res.status(200).json(
         new ApiResponse(200, video, 'Video viewed successfully.')
     );
@@ -462,7 +481,7 @@ const updateVideo = asyncHandler(async (req, res) => {
                     .max(5000)
                     .allow('') // Allow empty strings as valid input
                     .messages({
-                        'string.max': 'Username cannot exceed 30 characters.',
+                        'string.max': 'Description cannot exceed 5000 characters.',
                     })
 
         // Not validating isShorts, as once uploaded user cannot change video type (short/normal video)
