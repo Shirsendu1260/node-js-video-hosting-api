@@ -27,7 +27,7 @@ A backend API project for a video hosting platform, built with Node.js, Express,
 | Database | MongoDB (Mongoose) |
 | Validation | Joi |
 | Cloud Storage | Cloudinary |
-| Security | JWT, Bcrypt, Cookie-parser, CORS |
+| Security | JWT, Bcrypt, Cookie-parser, CORS, Express Rate Limit |
 
 ---
 
