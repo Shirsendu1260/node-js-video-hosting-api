@@ -197,8 +197,8 @@ const updatePost = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Post update validation failed.', errorArray);
     }
 
-    const postUpdated = await Post.findByIdAndUpdate(
-        decodedPostId,
+    const postUpdated = await Post.findOneAndUpdate(
+        { _id: decodedPostId, creator: req.user?._id },
         {
             $set: { content }
         },

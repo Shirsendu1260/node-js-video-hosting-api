@@ -509,8 +509,8 @@ const updateVideo = asyncHandler(async (req, res) => {
     if((title !== undefined) && (title !== '')) { fields.title = title };
     if(description !== undefined) { fields.description = description };
 
-    const video = await Video.findByIdAndUpdate(
-        decodedVideoId,
+    const video = await Video.findOneAndUpdate(
+        { _id: decodedVideoId, creator: req.user?._id },
         { $set: fields },
         {
             returnDocument: 'after',

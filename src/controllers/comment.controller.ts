@@ -408,8 +408,8 @@ const updateComment = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Comment validation failed.', errorArray);
     }
 
-    const commentUpdated = await Comment.findByIdAndUpdate(
-        decodedCommentId,
+    const commentUpdated = await Comment.findOneAndUpdate(
+        { _id: decodedCommentId, creator: req.user?._id },
         { 
             $set: { content } 
         },
