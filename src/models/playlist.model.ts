@@ -35,5 +35,5 @@ const playlistSchema = new mongoose.Schema<PlaylistDocument, PlaylistModel>({
 
 playlistSchema.plugin(mongooseAggregatePaginate as any);
 
-export const Playlist = mongoose.model<PlaylistDocument, PlaylistModel>('PlaylistModel', playlistSchema);
+export const Playlist = mongoose.model<PlaylistDocument, PlaylistModel>('Playlist', playlistSchema);
 export type { PlaylistDocument, PlaylistModel };
