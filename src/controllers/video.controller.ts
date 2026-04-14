@@ -23,7 +23,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
         page = 1, 
         limit = 4, 
         query, // search keyword
-        sortBy, // options -> views, createdAt
+        sortBy = 'views', // options -> views, createdAt
         sortType = -1, // By default DESCENDING 
         isShorts = false, 
         username
