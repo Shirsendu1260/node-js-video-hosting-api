@@ -76,14 +76,13 @@ const getUserPosts = asyncHandler(async (req, res) => {
     let { 
         page = 1, 
         limit = 4,
-        sortType = -1,
-        username
+        sortType = -1
     } = req.query as {
         page?: string,
         limit?: string,
         sortType?: string, // -1 -> 'desc', 1 -> 'asc'
-        username?: string
     };
+    const { username } = req.params as { username: string };
 
     const pageNo = Number(page);
     const limitCount = Number(limit);

@@ -7,7 +7,7 @@ import type { UserDocument } from "../models/user.model.js";
 import type { Request, Response, NextFunction } from 'express';
 
 /*
-///////    EXTENDING EXPRESS REQUEST TYPE — TYPESCRIPT CONCEPT    ///////
+///////    EXTENDING EXPRESS REQUEST TYPE (TYPESCRIPT CONCEPT)    ///////
 
 
 PROBLEM:
@@ -22,15 +22,15 @@ Its built-in interface looks like this internally:
         (NO 'user' property)
     }
 
-So when you write:
+So when we write:
     req.user = user
 TypeScript errors:
     "Property 'user' does not exist on type 'Request'"
 
 
-SOLUTION — Declaration Merging:
+SOLUTION - Declaration Merging:
 TypeScript has a feature where if you declare the same interface
-twice, it MERGES them instead of replacing one with the other.
+twice, it merges them instead of replacing one with the other.
 
     // Original (inside express package)
     interface Request {
@@ -39,7 +39,7 @@ twice, it MERGES them instead of replacing one with the other.
         .....
     }
 
-    // Your addition
+    // Our addition
     interface Request {
         user?: UserDocument
     }
@@ -49,7 +49,7 @@ twice, it MERGES them instead of replacing one with the other.
         body: any
         cookies: any
         .....
-        user?: UserDocument  <- your addition merged in
+        user?: UserDocument  <- our addition merged in
     }
 
 
@@ -58,7 +58,7 @@ Express's Request interface lives inside a NAMESPACE called 'Express'.
 A namespace is just a container that groups related types together
 to avoid name conflicts with other packages.
 
-To merge into Express's Request, you must reach inside that namespace:
+To merge into Express's Request, we must reach inside that namespace:
 
     declare global {           "I am adding to global types"
         namespace Express {    "specifically inside Express's namespace"
@@ -89,20 +89,20 @@ export const verifyJWT = asyncHandler(async (req: Request, _: Response, next: Ne
 		// Authorization: Bearer <token>
 
 		/* Two sources for the token:
-		Cookies — browser clients (web apps)
-		Authorization header — mobile apps or Postman (Bearer <token>) */
+		Cookies -> browser clients (web apps)
+		Authorization header -> mobile apps or Postman (Bearer <token>) */
 		const accessToken: string | undefined = req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', ''); // Authorization: Bearer abc123 -> Authorization: abc123
 
 		if(!accessToken) { // if undefined
 		    throw new ApiError(401, 'Unauthorized request.');
 		}
 
-    const secretKey = process.env.ACCESS_TOKEN_SECRET_KEY; // string | undefined at this stage
-    if (!secretKey) throw new ApiError(500, "ACCESS_TOKEN_SECRET_KEY is not defined."); // if undefined
-    const secret: Secret = secretKey; // now safe to assign, guaranteed string
+        const secretKey = process.env.ACCESS_TOKEN_SECRET_KEY; // string | undefined at this stage
+        if (!secretKey) throw new ApiError(500, "ACCESS_TOKEN_SECRET_KEY is not defined."); // if undefined
+        const secret: Secret = secretKey; // now safe to assign, guaranteed string
 
 		// Decodes the token and returns the payload
-    // jwt.verify() returns string | JwtPayload, we cast to JwtPayload to access ._id safely
+        // jwt.verify() returns string | JwtPayload, we cast to JwtPayload to access ._id safely
 		const decodedAccessToken = jwt.verify(accessToken, secret) as JwtPayload;
 
 		// If it passes, means user provided access token and server's access token are same (the user is authorized), 
@@ -126,11 +126,38 @@ export const verifyJWT = asyncHandler(async (req: Request, _: Response, next: Ne
 		next() → controller runs */
 	}
 	catch(error: unknown) {
-    if(error instanceof ApiError) throw error;
+        if(error instanceof ApiError) throw error;
 		throw new ApiError(401, error instanceof Error ? error.message : 'Error while verifying token!');
 	}
 });
 
+export const verifyOptionalJWT = asyncHandler(async (req: Request, _: Response, next: NextFunction) => {
+    try {
+        const accessToken: string | undefined = req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', '');
+
+        // If user is not logged-in (token undefined), move to the controller, means unauthenticated user 
+        // granted access for the applied route
+        if(!accessToken) {
+            return next();
+        }
+
+        const secretKey = process.env.ACCESS_TOKEN_SECRET_KEY;
+        if (!secretKey) throw new ApiError(500, "ACCESS_TOKEN_SECRET_KEY is not defined.");
+        const secret: Secret = secretKey;
+        const decodedAccessToken = jwt.verify(accessToken, secret) as JwtPayload;
+        const user = await User.findById(decodedAccessToken?._id).select('-password -refreshToken');
+
+        if(user) {
+            req.user = user;
+        }
+
+        next();
+    }
+    catch(error) {
+        if(error instanceof ApiError) throw error;
+        throw new ApiError(401, error instanceof Error ? error.message : 'Error while verifying token!');
+    }
+});
 
 
 
@@ -180,7 +207,7 @@ export const verifyJWT = asyncHandler(async (req: Request, _: Response, next: Ne
   PAYLOAD — WHAT'S INSIDE THE TOKEN
 ============================================================
 
-  The middle part is just Base64 encoded — NOT encrypted.
+  The middle part is just Base64 encoded - NOT encrypted.
   Anyone can decode it. So NEVER store passwords in JWT.
 
   Decoded payload looks like:
@@ -198,14 +225,14 @@ export const verifyJWT = asyncHandler(async (req: Request, _: Response, next: Ne
   WHAT DOES "SIGNED" MEAN?
 ============================================================
 
-  Signature is created using your SECRET KEY:
+  Signature is created using our SECRET KEY:
   signature = HMAC(header + payload, SECRET_KEY)
 
   If someone tampers with the payload (changes _id to someone else's),
-  the new signature won't match the actual → server detects it → token rejected.
+  the new signature won't match the actual -> server detects it -> token rejected.
 
   Original:  header . payload     . valid_signature    -> correct
-  Tampered:  header . new_payload . valid_signature    -> mismatch → rejected
+  Tampered:  header . new_payload . valid_signature    -> mismatch & rejected
 */
 
 
@@ -215,28 +242,22 @@ export const verifyJWT = asyncHandler(async (req: Request, _: Response, next: Ne
 ============================================================
 
                   Access Token          Refresh Token
-  Purpose    →    Prove identity        Get a new access token
-  Expiry     →    Short (15min–1day)    Long (7–30 days)
-  Stored     →    Cookie or memory      Cookie + Database
-  Sent with  →    Every request         Only when access token expires
+  Purpose    ->    Prove identity        Get a new access token
+  Expiry     ->    Short (15min–1day)    Long (7–30 days)
+  Stored     ->    Cookie or memory      Cookie + Database
+  Sent with  ->    Every request         Only when access token expires
 
   WHY SHORT EXPIRY ON ACCESS TOKEN?
-  → If it gets stolen, attacker has limited time window.
-  → Short expiry = less damage if compromised.
+  -> If it gets stolen, attacker has limited time window.
+  -> Short expiry = less damage if compromised.
 
   FLOW:
   User logs in
-       ↓
   Server gives access token (short life) + refresh token (long life)
-       ↓
   User makes requests with access token
-       ↓
   Access token expires
-       ↓
   User sends refresh token
-       ↓
-  Server verifies refresh token in DB → token matches → issues new access token
-       ↓
+  Server verifies refresh token in DB -> token matches -> issues new access token
   User keeps going without logging in again
 */
 
@@ -265,7 +286,7 @@ userSchema.methods.generateAccessJWTToken = function () {
 
 // STEP 2 — Tokens sent to user via secure cookies
 // Browser stores these cookies automatically
-// Browser sends them with every future request to your server
+// Browser sends them with every future request to our server
 /*
 res.status(200)
     .cookie('accessToken', accessToken, options)
@@ -277,9 +298,9 @@ res.status(200)
 // STEP 3 — User hits a protected route
 // verifyJWT middleware intercepts BEFORE the controller runs
 // GET /api/v1/users/profile
-//       ↓
+//       |
 // verifyJWT runs first
-//       ↓
+//       |
 // profileController runs ONLY if verifyJWT passes
 
 
@@ -293,7 +314,7 @@ res.status(200)
 
 
 // STEP 5 — User attached to request object
-// Now every controller AFTER this middleware can access req.user
+// Now every controller after this middleware can access req.user
 // and know exactly who is making the request
 /*
 const user = await User.findById(decodedAccessToken?._id).select('-password -refreshToken');
@@ -336,15 +357,15 @@ next(); // Without next(), request hangs forever
 ============================================================
 
   Bearer = an authentication SCHEME
-  Meaning: "The person BEARING (carrying) this token should be given access"
+  Meaning: "The person bearing (carrying) this token should be given access"
 
   Format is always:
-  Authorization: Bearer <your_token_here>
+  Authorization: Bearer <our_token_here>
 
   Other schemes exist too:
-  Authorization: Basic am9objpwYXNzd29yZA==   ← username:password in base64
-  Authorization: Bearer eyJhbGc...             ← JWT token  (used here)
-  Authorization: ApiKey abc123                 ← API key
+  Authorization: Basic am9objpwYXNzd29yZA==   <- username:password in base64
+  Authorization: Bearer eyJhbGc...             <- JWT token  (used here)
+  Authorization: ApiKey abc123                 <- API key
 
   For JWT → Bearer is the standard
 */
@@ -359,19 +380,18 @@ next(); // Without next(), request hangs forever
       || req.header('Authorization')?.replace('Bearer ', ''); // Way 2 — Header
 
   Way 1 — Cookies:
-  → Used by BROWSERS automatically
-  → User visits your web app → browser sends cookies with every request
-  → No extra code needed on frontend
+  -> Used by browsers automatically
+  -> User visits our web app -> browser sends cookies with every request
 
   Way 2 — Authorization Header:
-  → Used by mobile apps, Postman, or other services
-  → They can't use cookies the same way
-  → They manually add the header
+  -> Used by mobile apps, Postman, or other services
+  -> They can't use cookies the same way
+  -> They manually add the header
 
-  In Postman you set:
+  In Postman we set:
   Authorization: Bearer eyJhbGc...
 
-  Your code strips "Bearer " and keeps just the token:
+  Our code strips "Bearer " and keeps just the token:
   .replace('Bearer ', '')
   "Bearer eyJhbGc..." → "eyJhbGc..."
 */
@@ -384,24 +404,18 @@ next(); // Without next(), request hangs forever
 
   1. POST /sign-in
      Body: { email, password }
-              ↓
   2. Server verifies credentials
-              ↓
   3. Server creates access token (short life) + refresh token (long life)
-              ↓
   4. Tokens sent via cookies in response
-              ↓
   5. GET /profile  (protected route)
-     Cookie: accessToken=eyJhbGc...  ← sent automatically by browser
-              ↓
+     Cookie: accessToken=eyJhbGc...  <- sent automatically by browser
   6. verifyJWT middleware runs:
      - Extracts token from cookie or Authorization header
      - Verifies signature (not tampered)
      - Checks expiry (not expired)
-     - Decodes payload → gets _id
+     - Decodes payload & gets _id
      - Fetches user from DB using _id
      - Attaches user to req.user
-              ↓
   7. profileController runs:
      - Uses req.user to get profile data
      - Sends response back to client
