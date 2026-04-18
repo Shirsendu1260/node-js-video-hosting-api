@@ -101,10 +101,6 @@ const updateReportStatus = asyncHandler(async (req, res) => {
 
     const decodedReportId = getBase64DecodedId(reportId);
 
-    if(req.user?.username !== process.env.ADMIN_USERNAME) {
-        throw new ApiError(403, 'You are not authorized to update report status.');
-    }
-
     const statusValidation = ['PEND', 'REV', 'RES'].includes(status);
 
     if(!statusValidation) {
@@ -148,10 +144,6 @@ const getAllReports = asyncHandler(async (req, res) => {
 
     const pageNo = Number(page);
     const limitCount = Number(limit);
-
-    if(req.user?.username !== process.env.ADMIN_USERNAME) {
-        throw new ApiError(403, 'You are not authorized to view user reports.');
-    }
 
     if(status) {
         const statusValidation = ['PEND', 'REV', 'RES'].includes(status);
