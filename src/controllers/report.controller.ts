@@ -11,12 +11,12 @@ import mongoose from 'mongoose';
 
 // For submitting a new report for a Video or Post
 const submitReport = asyncHandler(async (req, res) => {
-	const { targetId, targetModel, reason, details } = req.body as {
-		targetId: string,
+	const { targetModel, reason, details } = req.body as {
 		targetModel: string,
 		reason: string,
 		details?: string
 	};
+    const { targetId } = req.params as { targetId: string };
 
 	if(!req.user) {
         throw new ApiError(401, 'You need to be authenticated to report this content.');

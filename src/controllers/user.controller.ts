@@ -32,6 +32,9 @@ const signUpUser = asyncHandler(async (req, res) => {
     // We destructure and immediately cast to a known shape
     // console.log(fullName, username, email, gender, password);
 
+    // Force isAdmin to false for all public signups
+    const isAdmin = false;
+
 
 	/******** Step 2: Validate request data	********/
     const validatorSchema = Joi.object({
@@ -204,7 +207,8 @@ const signUpUser = asyncHandler(async (req, res) => {
         gender,
         avatar: avatarOnCloudinary.secure_url,
         coverImage: coverImageOnCloudinary?.secure_url ?? '', // coverImage may or may not be uploaded by user
-        password // At this point password is hashed using pre() middleware
+        password, // At this point password is hashed using pre() middleware
+        isAdmin // This will always be false
     });
 
 

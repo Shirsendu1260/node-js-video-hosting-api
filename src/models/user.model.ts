@@ -22,7 +22,8 @@ interface IUser {
 	avatar: string,
 	coverImage?: string,
 	password: string,
-	refreshToken?: string
+	refreshToken?: string,
+	isAdmin: boolean
 }
 
 // Declare the instance methods added to each User document (later will be defined with userSchema.methods) 
@@ -96,6 +97,11 @@ const userSchema = new mongoose.Schema<UserDocument, UserModel>({
 	},
 	refreshToken: {
 		type: String
+	},
+	isAdmin: {
+		type: Boolean,
+    required: true,
+    default: false
 	}
 }, { timestamps: true });
 
