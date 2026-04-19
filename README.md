@@ -12,7 +12,7 @@ This started as part of the *Chai aur Backend* series, and I extended it signifi
 - **TypeScript** — not just surface-level. Custom interfaces, utility types, declaration merging for `req.user`, proper typing on Mongoose models & documents.
 - **Joi Validation** — runs before business logic on all write endpoints. Returns all field-level errors as an array, not just the first one.
 - **RBAC** — admin flag on users with a middleware that blocks non-admins from admin routes.
-- **Rate Limiting** — general limiter (50 req. / 15 min) applied globally, stricter auth limiter (6 req. / 15 min) on signin, signup, and token refresh.
+- **Rate Limiting** — general limiter (25 req. / 15 min) applied globally, stricter auth limiter (6 req. / 15 min) on signin, signup, and token refresh.
 - **Cloudinary** — avatar, cover image, video uploads via Multer. Old files get deleted from Cloudinary when updated or removed.
 - **MongoDB Aggregations** — used for subscriber counts, channel stats, watch history, paginated video feeds, and text search with title/description weighting.
 - **Content Reporting** — users can report videos and posts, admins can review and update report statuses.
@@ -120,4 +120,4 @@ Protected routes need a valid JWT — either via HttpOnly cookie (browser) or `A
 ## Developed by
 
 **Shirsendu Mali** — Kolkata, India  
-Backend Development · Node.js · TypeScript · MongoDB
+Backend Development · Node.js · TypeScript · Express · MongoDB
