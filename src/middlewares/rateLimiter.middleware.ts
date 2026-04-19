@@ -75,3 +75,8 @@ export const authLimiter = rateLimit({
 // on platforms such as Railway, Render etc. They runs our app as one instance, so memory is 
 // shared across all requests.
 // Redis is only needed when we scale to multiple server instances. We are nowhere near that.
+
+
+// It's 25 requests total to the entire server per IP in 15 minutes, not 25 per route.
+// So if a single IP hits /api/v1/video/all 21 times and /api/v1/user/get-auth-user 4 times, 
+// that's 25 total, they're blocked on the 26th request regardless of which route it hits.
