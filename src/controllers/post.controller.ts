@@ -45,7 +45,7 @@ const createPost = asyncHandler(async (req, res) => {
             }
         });
 
-        console.log(errorArray);
+        // console.log(errorArray);
         throw new ApiError(400, 'Post create validation failed.', errorArray);
     }
 
@@ -192,7 +192,7 @@ const updatePost = asyncHandler(async (req, res) => {
             }
         });
 
-        console.log(errorArray);
+        // console.log(errorArray);
         throw new ApiError(400, 'Post update validation failed.', errorArray);
     }
 

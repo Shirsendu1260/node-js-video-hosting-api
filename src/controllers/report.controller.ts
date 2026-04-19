@@ -64,7 +64,7 @@ const submitReport = asyncHandler(async (req, res) => {
             }
         });
 
-        console.log(errorArray);
+        // console.log(errorArray);
         throw new ApiError(400, 'Report submit validation failed.', errorArray);
     }
 

@@ -114,7 +114,7 @@ const signUpUser = asyncHandler(async (req, res) => {
             { field: 'msg' }; // Wrong -> gives { field: 'msg' }
             { [field]: 'msg' }; // Correct -> gives { email: 'msg' } */
         }); // Collect all error messages into an array
-        console.log(errorArray);
+        // console.log(errorArray);
     	throw new ApiError(400, 'Sign-up validation failed.', errorArray); // 400: Bad Request, means server cannot process the request because of a client-side error
     }
 
@@ -284,7 +284,7 @@ const signInUser = asyncHandler(async (req, res) => {
         const errorArray: IErrorMessage[] = error.details.map(detail => {
             return { [detail.path[0] as string]: detail.message };
         });
-        console.log(errorArray);
+        // console.log(errorArray);
         throw new ApiError(400, 'Sign-in validation failed.', errorArray);
     }
 

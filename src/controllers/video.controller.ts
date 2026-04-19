@@ -281,7 +281,7 @@ const publishVideo = asyncHandler(async (req, res) => {
             };
         });
 
-        console.log(errorArray);
+        // console.log(errorArray);
         throw new ApiError(400, 'Video publication validation failed.', errorArray);
     }
 
@@ -499,7 +499,7 @@ const updateVideo = asyncHandler(async (req, res) => {
             };
         });
 
-        console.log(errorArray);
+        // console.log(errorArray);
         throw new ApiError(400, 'Video metadata updation validation failed.', errorArray);
     }
 

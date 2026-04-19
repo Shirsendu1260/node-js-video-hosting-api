@@ -54,7 +54,7 @@ const createPlaylist = asyncHandler(async (req, res) => {
             }
         });
 
-        console.log(errorArray);
+        // console.log(errorArray);
         throw new ApiError(400, 'Playlist create validation failed.', errorArray);
     }
 
@@ -421,7 +421,7 @@ const updatePlaylist = asyncHandler(async (req, res) => {
             }
         });
 
-        console.log(errorArray);
+        // console.log(errorArray);
         throw new ApiError(400, 'Playlist update validation failed.', errorArray);
     }
 

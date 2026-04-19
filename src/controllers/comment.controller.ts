@@ -296,7 +296,7 @@ const addComment = asyncHandler(async (req, res) => {
             };
         });
 
-        console.log(errorArray);
+        // console.log(errorArray);
         throw new ApiError(400, 'Comment validation failed.', errorArray);
     }
 
@@ -404,7 +404,7 @@ const updateComment = asyncHandler(async (req, res) => {
             };
         });
 
-        console.log(errorArray);
+        // console.log(errorArray);
         throw new ApiError(400, 'Comment validation failed.', errorArray);
     }
 
