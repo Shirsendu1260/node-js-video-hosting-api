@@ -12,6 +12,8 @@ import postRouter from './routes/post.routes.js';
 import dashboardRouter from './routes/dashboard.routes.js';
 import healthcheckRouter from './routes/healthcheck.routes.js';
 import reportRouter from './routes/report.routes.js';
+import type { Request, Response, NextFunction } from 'express';
+import { ApiError } from './utils/ApiError.js';
 
 
 
@@ -31,7 +33,7 @@ app.use(cors({
 	credentials: true               // Allow cookies/auth headers
 }));
 
-// 2. Parse incoming JSON request bodies (without this "req.body" would be undefined)
+// 2. Parse incoming JSON request bodies (without this req.body would be undefined)
 app.use(express.json({
 	limit: DATA_LIMIT // Prevent very large payloads
 }));
@@ -67,6 +69,38 @@ app.use('/api/v1/post', postRouter);
 app.use('/api/v1/dashboard', dashboardRouter);
 app.use('/api/v1/healthcheck', healthcheckRouter);
 app.use('/api/v1/report', reportRouter);
+
+
+
+
+
+// 404 response for unknown routes
+app.use((req: Request, res: Response) => {
+	return res.status(404).json({
+		statusCode: 404,
+		success: false,
+		message: 'Route not found.'
+	});
+});
+
+// Global error handler (with all 4 parameters for Express to treat it as error middleware)
+app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
+	if(err instanceof ApiError) {
+		return res.status(err.statusCode).json({
+			statusCode: err.statusCode,
+			success: false,
+			message: err.message,
+			errors: err.errors
+		});
+	}
+
+	// If any unexpected error occurs such as server crashes, unknown bugs etc.
+	return res.status(500).json({
+		statusCode: 500,
+		success: false,
+		message: 'Internal Server Error.'
+	});
+});
 
 
 

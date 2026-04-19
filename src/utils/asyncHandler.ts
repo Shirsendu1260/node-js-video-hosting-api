@@ -24,9 +24,9 @@ type AsyncControllerFunction = (
 // 			// });
 
 // 			// next() -> continue normally
-// 			// next(error) -> jump to Express error handler
+// 			// next(error) -> jump to Express error handler or global error handler
 
-// 			next(error); // Skip normal middleware and forward the error to Express's error-handling middleware
+// 			next(error); // Skip normal middleware and forward the error to Express's error-handling middleware or global error handler middleware
 // 		}
 // 	}
 // }
@@ -55,7 +55,7 @@ const asyncHandler = (requestHandler: AsyncControllerFunction): RequestHandler =
 		.catch((error) => next(error));
 		If any error happens: database error, undefined variable, rejected promise
 		it will automatically go to: next(error)
-		which triggers Express error middleware.
+		which triggers Express error middleware or global error handler.
 		*/
 
 		// // Without asyncHandler:
@@ -79,7 +79,7 @@ const asyncHandler = (requestHandler: AsyncControllerFunction): RequestHandler =
 		asyncHandler's returned function runs (req, res, next)
 		Your original controller runs inside Promise.resolve()
 		Success? -> res.json() sends response normally
-		Error?   -> .catch() -> next(error) -> Express error middleware
+		Error?   -> .catch() -> next(error) -> Express error middleware or global error handler
 		*/
 
 		// asyncHandler wraps async controllers and forwards errors to Express automatically.
