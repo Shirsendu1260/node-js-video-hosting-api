@@ -20,7 +20,40 @@ import { generalLimiter } from './middlewares/rateLimiter.middleware.js';
 
 
 
-const app = express(); // TS automatically infers the type of app as 'Express' from the express() call
+const app = express(); // TS automatically infers the type of app as 'Express' from this call
+
+app.set('trust proxy', 1); // Trust first proxy (proxy/load balancer)
+// '1' means trust the first proxy in the chain only, not blindly trust all headers
+
+// Above code is the solution for the X-Forwarded-For Error
+// When we deploy on any cloud platform (Render, Railway, Vercel etc.), our Express app doesn't sit 
+// directly on the internet. There's a proxy/load balancer in front of it:
+// 	  Real User (IP: 103.x.x.x) -> Proxy/Load Balancer (sits here) -> Our Express App
+// The proxy forwards the request to our app, but the request now appears to come from the proxy's 
+// IP, not the user's real IP. To solve this, the proxy adds a special header:
+// 	  X-Forwarded-For: 103.x.x.x
+// This header says — "hey Express, the real user IP is this, I'm just the middleman."
+// Now express-rate-limit sees this header and tries to use it for IP-based rate limiting. But Express's 
+// trust proxy setting is false by default, meaning Express says — "I don't trust this header, anyone 
+// could fake it."
+// express-rate-limit then throws the ValidationError, and because it crashes mid-request, every 
+// request fails before reaching our routes, that's why we got 404 on everything including healthcheck.
+
+// Why '1' and not 'true'?
+// trust proxy = true -> trusts all proxies in the chain blindly. A malicious user could spoof the 
+// X-Forwarded-For header and fake their IP, bypassing rate limiting entirely.
+// trust proxy = 1 -> trusts only the first (outermost) proxy. Since Render/Railway's proxy is the 
+// first one, it reads that correctly. Any spoofed headers deeper in the chain are ignored.
+// This is the secure production-standard setting for any single-proxy deployment.
+
+// Learning:
+// This is a very real and common backend concept. In production, our app almost never sits directly 
+// on the internet; there's always a proxy, load balancer, or CDN in front. Understanding the proxy 
+// chain is important because it affects:
+// Rate limiting (IP identification)
+// Logging real user IPs
+// HTTPS detection (req.secure)
+// Geo-location based on IP
 
 
 
