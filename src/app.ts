@@ -11,6 +11,7 @@ import playlistRouter from './routes/playlist.routes.js';
 import postRouter from './routes/post.routes.js';
 import dashboardRouter from './routes/dashboard.routes.js';
 import healthcheckRouter from './routes/healthcheck.routes.js';
+import reportRouter from './routes/report.routes.js';
 
 
 
@@ -65,6 +66,7 @@ app.use('/api/v1/playlist', playlistRouter);
 app.use('/api/v1/post', postRouter);
 app.use('/api/v1/dashboard', dashboardRouter);
 app.use('/api/v1/healthcheck', healthcheckRouter);
+app.use('/api/v1/report', reportRouter);
 
 
 
