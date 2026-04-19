@@ -14,6 +14,7 @@ import healthcheckRouter from './routes/healthcheck.routes.js';
 import reportRouter from './routes/report.routes.js';
 import type { Request, Response, NextFunction } from 'express';
 import { ApiError } from './utils/ApiError.js';
+import { generalLimiter } from './middlewares/rateLimiter.middleware.js';
 
 
 
@@ -51,6 +52,10 @@ app.use(express.static('public'));
 //    Reads cookies from incoming HTTP requests (without this "req.cookies" would be undefined)
 app.use(cookieParser());
 
+// 6. With rate limiter middleware, restricting client how many max. requests he/she can make to 
+//    our API within a time window specified in the middleware
+app.use(generalLimiter);
+
 
 
 
@@ -83,7 +88,7 @@ app.use((req: Request, res: Response) => {
 	});
 });
 
-// Global error handler (with all 4 parameters for Express to treat it as error middleware)
+// Global error handler (with all 4 parameters for Express to treat it as error handler middleware)
 app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
 	if(err instanceof ApiError) {
 		return res.status(err.statusCode).json({

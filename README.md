@@ -1,86 +1,77 @@
 # Node.js Video Hosting Backend API
 
-A backend API project for a video hosting platform, built with Node.js, Express, TypeScript, and MongoDB. Handles secure JWT authentication, media upload and management, and data aggregation — with a focus on clean structure and maintainable code.
+A backend REST API project for a video hosting platform, similar to YouTube in terms of core features. Built with Node.js, Express, TypeScript, and MongoDB.
 
-> Inspired by the *Chai aur Backend* series, independently refactored from JavaScript to TypeScript, with Joi validation logic, API rate limiting, custom interfaces & controllers and many more.
+This started as part of the *Chai aur Backend* series, and I extended it significantly from there; migrated the whole codebase from JavaScript to TypeScript, added Joi validation, a content reporting feature, comment likes, role-based access control, rate limiting, and a few other things I felt were missing.
 
 ---
 
-## Features
+## What's in it
 
-- **TypeScript Throughout** — Static typing across the entire codebase with custom interfaces and utility types.
-- **JWT Authentication** — Access and refresh token flow with HttpOnly cookie storage.
-- **Request Validation** — Joi validation runs before business logic on all form submits.
-- **Media Uploads** — Avatars, cover images, and video assets handled via Multer and stored on Cloudinary.
-- **MongoDB Aggregations** — Pipelines for subscriber counts, channel stats, videos and many more.
-- **Consistent API Responses** — Custom `ApiError` and `ApiResponse` classes for predictable, uniform responses across all endpoints.
+- **JWT Auth** — access + refresh token flow, stored in HttpOnly cookies. Also supports `Authorization: Bearer` header for Postman, other API clients, mobile devices etc.
+- **TypeScript** — not just surface-level. Custom interfaces, utility types, declaration merging for `req.user`, proper typing on Mongoose models & documents.
+- **Joi Validation** — runs before business logic on all write endpoints. Returns all field-level errors as an array, not just the first one.
+- **RBAC** — admin flag on users with a middleware that blocks non-admins from admin routes.
+- **Rate Limiting** — general limiter (50 req. / 15 min) applied globally, stricter auth limiter (6 req. / 15 min) on signin, signup, and token refresh.
+- **Cloudinary** — avatar, cover image, video uploads via Multer. Old files get deleted from Cloudinary when updated or removed.
+- **MongoDB Aggregations** — used for subscriber counts, channel stats, watch history, paginated video feeds, and text search with title/description weighting.
+- **Content Reporting** — users can report videos and posts, admins can review and update report statuses.
+- **Consistent responses** — custom `ApiError` and `ApiResponse` classes so every endpoint returns the same JSON structure.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
+| | |
 |---|---|
 | Language | TypeScript 5.x |
 | Runtime | Node.js |
 | Framework | Express.js 4.x |
-| Database | MongoDB (Mongoose) |
+| Database | MongoDB |
+| ODM | Mongoose |
 | Validation | Joi |
-| Cloud Storage | Cloudinary |
-| Security | JWT, Bcrypt, Cookie-parser, CORS, Express Rate Limit |
+| Storage | Cloudinary |
+| Auth & Security | JWT, Bcrypt, CORS, Cookie-parser, Express Rate Limit |
 
 ---
 
-## Project Structure
+## Folder Structure
 
 ```
 src/
-├── controllers/     # Route handlers and business logic
-├── db/              # Database connection
-├── middlewares/     # Auth and Multer file uploads
-├── models/          # Mongoose schemas
-├── routes/          # Express route definitions
-├── utils/           # ApiError, ApiResponse, asyncHandler
-├── app.ts           # Express app setup
-├── constants.ts     # App constants
-└── index.ts         # Server entry point
+├── controllers/     # business logic for each feature
+├── db/              # MongoDB connection
+├── middlewares/     # auth (JWT), multer, rate limiter
+├── models/          # Mongoose schemas + TS interfaces
+├── routes/          # route definitions
+├── utils/           # ApiError, ApiResponse, asyncHandler, cloudinary helpers
+├── app.ts           # Express setup, applied middlewares, error handlers
+├── constants.ts     # shared constants
+└── index.ts         # entry point
 ```
 
 ---
 
-## Getting Started
+## Setup
 
-### Prerequisites
-
-- Node.js v18+
-- MongoDB instance (local or Atlas)
-- Cloudinary account
-
-### 1. Clone the repository
+**Requirements:** Node.js v18+, a MongoDB instance (local or cloud), Cloudinary account
 
 ```bash
 git clone https://github.com/Shirsendu1260/node-js-video-hosting-api.git
-cd node-js-video-hosting-api/
-```
-
-### 2. Install dependencies
-
-```bash
+cd node-js-video-hosting-api
 npm install
 ```
 
-### 3. Configure environment variables
-
-Create a `.env` file in the root directory:
+Create a `.env` file in the root:
 
 ```env
 PORT=8000
-MONGODB_URI=your_mongodb_connection_string
-CORS_ORIGIN=*
+MONGODB_URI=your_mongodb_uri
+CORS_ORIGIN=your_frontend_url
 
-ACCESS_TOKEN_SECRET_KEY=your_access_token_secret
+ACCESS_TOKEN_SECRET_KEY=your_secret
 ACCESS_TOKEN_SECRET_KEY_EXPIRY=1d
-REFRESH_TOKEN_SECRET_KEY=your_refresh_token_secret
+REFRESH_TOKEN_SECRET_KEY=your_secret
 REFRESH_TOKEN_SECRET_KEY_EXPIRY=10d
 
 CLOUDINARY_CLOUD_NAME=your_cloud_name
@@ -88,65 +79,45 @@ CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 ```
 
-### 4. Run in development mode
-
 ```bash
-npm run dev
-```
-
-### 5. Build for production
-
-```bash
-npm run build
-npm start
+npm run dev       # development server
+npm run build     # compile TS to JS
+npm start         # run compiled build
 ```
 
 ---
 
-## API Reference
+## API Base URL
 
-**Base URL:** `http://localhost:8000/api/v1`
+```
+http://localhost:8000/api/v1
+```
 
-> Protected routes require a valid JWT via HttpOnly cookie or `Authorization: Bearer <token>` header.
+Protected routes need a valid JWT — either via HttpOnly cookie (browser) or `Authorization: Bearer <token>` header (Postman, other API clients, mobile devices etc.).
 
-### Response Format
-
-All endpoints return a consistent structure.
-
-**Success**
+**Success response**
 ```json
 {
   "statusCode": 200,
   "data": { ... },
-  "message": "User fetched successfully.",
+  "message": "Success!",
   "success": true
 }
 ```
 
-**Error**
+**Error response**
 ```json
 {
-  "statusCode": 401,
-  "message": "Unauthorized request.",
+  "statusCode": 400,
+  "message": "Validation failed.",
   "success": false,
-  "errors": []
+  "errors": [{ "fieldName": "error message" }]
 }
 ```
 
 ---
 
-## Scripts
+## Developed by
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start development server with Nodemon |
-| `npm run build` | Compile TypeScript to `dist/` |
-| `npm start` | Run compiled production build |
-
----
-
-## Developed By
-
-**Shirsendu Mali**  
-📍 Kolkata, India  
-Backend Development · Node.js · TypeScript
+**Shirsendu Mali** — Kolkata, India  
+Backend Development · Node.js · TypeScript · MongoDB
