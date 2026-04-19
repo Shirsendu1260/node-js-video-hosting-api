@@ -69,7 +69,7 @@ router.route('/sign-in').post(authLimiter, signInUser);
 
 // The 'authLimiter' & 'generalLimiter' (which already ran globally) both runs here. So on 
 // sign-in/sign-up, the client effectively faces both, hits auth limit (6) long before the 
-// general limit (50).
+// general limit (25).
 
 // As in the controller, we used req.params to get 'username', so here also we need to use 'username' with ':' as a prefix
 router.route('/channel/:username').get(getUserChannelDetails);
