@@ -473,7 +473,7 @@ const updateProfileDetails = asyncHandler(async (req, res) => {
         const errorArray: IErrorMessage[] = error.details.map(detail => {
             return { [detail.path[0] as string]: detail.message };
         });
-        console.log(errorArray);
+        // console.log(errorArray);
         throw new ApiError(400, 'Profile update validation failed.', errorArray); // 400: Bad Request, means server cannot process the request because of a client-side error
     }
 
@@ -726,7 +726,7 @@ const getUserChannelDetails = asyncHandler(async (req, res) => {
             }
         }
     ]);
-    console.log(userChannel); // An array, which will consist only one object i.e. the channel detail we constructed
+    // console.log(userChannel); // An array, which will consist only one object i.e. the channel detail we constructed
 
     if(userChannel?.length < 1) {
         throw new ApiError(404, 'Channel not found.');
