@@ -15,10 +15,10 @@ const router = Router();
 
 ////////////////////////////////  AUTHENTICATED ROUTES  ////////////////////////////////
 
-router.route('/video/like/:videoId').post(verifyJWT, toggleVideoLikeDislike);
-router.route('/post/like/:postId').post(verifyJWT, togglePostLikeDislike);
-router.route('/comment/like/:commentId').post(verifyJWT, toggleCommentLikeDislike);
-router.route('/video/all/liked').get(verifyJWT, getLikedVideos);
+router.route('/video/:videoId').post(verifyJWT, toggleVideoLikeDislike);
+router.route('/post/:postId').post(verifyJWT, togglePostLikeDislike);
+router.route('/comment/:commentId').post(verifyJWT, toggleCommentLikeDislike);
+router.route('/liked-videos').get(verifyJWT, getLikedVideos);
 
 
 

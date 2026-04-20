@@ -14,9 +14,9 @@ const router = Router();
 
 ////////////////////////////////  AUTHENTICATED ROUTES  ////////////////////////////////
 
-router.route('/report/:targetId').post(verifyJWT, submitReport);
-router.route('/report/status/:reportId').patch(verifyJWT, verifyAdmin, updateReportStatus);
-router.route('/report/all').get(verifyJWT, verifyAdmin, getAllReports);
+router.route('/:targetId').post(verifyJWT, submitReport);
+router.route('/status/:reportId').patch(verifyJWT, verifyAdmin, updateReportStatus);
+router.route('/all').get(verifyJWT, verifyAdmin, getAllReports);
 
 
 

@@ -14,14 +14,14 @@ const router = Router();
 
 ////////////////////////////////  PUBLIC ROUTES  ////////////////////////////////
 
-router.route('/channel/:channelId/subscribers').get(getUserChannelSubscribers);
-router.route('/channel/:channelId/channels').get(getSubscribedChannels);
+router.route('/:channelId/subscribers').get(getUserChannelSubscribers);
+router.route('/:channelId/channels').get(getSubscribedChannels);
 
 
 
 ////////////////////////////////  AUTHENTICATED ROUTES  ////////////////////////////////
 
-router.route('/channel/subscription/:channelId').post(verifyJWT, toggleSubscription);
+router.route('/:channelId').post(verifyJWT, toggleSubscription);
 
 
 

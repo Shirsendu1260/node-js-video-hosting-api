@@ -16,21 +16,21 @@ const router = Router();
 
 ////////////////////////////////  PUBLIC ROUTES  ////////////////////////////////
 
-router.route('/comment/:videoId').get(getComments);
-router.route('/comment/:postId').get(getComments);
-router.route('/comment/:videoId/:parentCommentId').get(getNestedComments);
-router.route('/comment/:postId/:parentCommentId').get(getNestedComments);
+router.route('/:videoId').get(getComments);
+router.route('/:postId').get(getComments);
+router.route('/:videoId/:parentCommentId').get(getNestedComments);
+router.route('/:postId/:parentCommentId').get(getNestedComments);
 
 
 
 ////////////////////////////////  AUTHENTICATED ROUTES  ////////////////////////////////
 
-router.route('/comment/:videoId/add').post(verifyJWT, addComment);
-router.route('/comment/:postId/add').post(verifyJWT, addComment);
-router.route('/comment/:videoId/:parentCommentId/add').post(verifyJWT, addComment);
-router.route('/comment/:postId/:parentCommentId/add').post(verifyJWT, addComment);
-router.route('/comment/:commentId').patch(verifyJWT, updateComment);
-router.route('/comment/:commentId').delete(verifyJWT, deleteComment);
+router.route('/:videoId/add').post(verifyJWT, addComment);
+router.route('/:postId/add').post(verifyJWT, addComment);
+router.route('/:videoId/:parentCommentId/add').post(verifyJWT, addComment);
+router.route('/:postId/:parentCommentId/add').post(verifyJWT, addComment);
+router.route('/:commentId').patch(verifyJWT, updateComment);
+router.route('/:commentId').delete(verifyJWT, deleteComment);
 
 
 

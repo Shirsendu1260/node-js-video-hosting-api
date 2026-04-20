@@ -13,8 +13,8 @@ const router = Router();
 
 ////////////////////////////////  AUTHENTICATED ROUTES  ////////////////////////////////
 
-router.route('/channel/:username/stats').get(verifyJWT, getChannelStats);
-router.route('/channel/:username/videos').get(verifyJWT, getChannelVideos);
+router.route('/:username/stats').get(verifyJWT, getChannelStats);
+router.route('/:username/videos').get(verifyJWT, getChannelVideos);
 
 
 

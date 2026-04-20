@@ -20,10 +20,9 @@ import { generalLimiter } from './middlewares/rateLimiter.middleware.js';
 
 
 
-const app = express(); // TS automatically infers the type of app as 'Express' from this call
+const app = express();
 
 app.set('trust proxy', 1); // Trust first proxy (proxy/load balancer)
-// '1' means trust the first proxy in the chain only, not blindly trust all headers
 
 // Above code is the solution for the X-Forwarded-For Error
 // When we deploy on any cloud platform (Render, Railway, Vercel etc.), our Express app doesn't sit 

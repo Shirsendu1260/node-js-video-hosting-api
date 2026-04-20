@@ -18,18 +18,18 @@ const router = Router();
 
 ////////////////////////////////  PUBLIC ROUTES  ////////////////////////////////
 
-router.route('/playlist/:playlistId').get(verifyOptionalJWT, getPlaylistById);
-router.route('/channel/playlist/:userId').get(getUserPlaylists);
+router.route('/:playlistId').get(verifyOptionalJWT, getPlaylistById);
+router.route('/all/:userId').get(getUserPlaylists);
 
 
 
 ////////////////////////////////  AUTHENTICATED ROUTES  ////////////////////////////////
 
-router.route('/playlist/create').post(verifyJWT, createPlaylist);
-router.route('/playlist/:playlistId').patch(verifyJWT, updatePlaylist);
-router.route('/playlist/:playlistId').delete(verifyJWT, deletePlaylist);
-router.route('/playlist/add/:playlistId/:videoId').patch(verifyJWT, addVideoToPlaylist);
-router.route('/playlist/remove/:playlistId/:videoId').patch(verifyJWT, removeVideoFromPlaylist);
+router.route('/create').post(verifyJWT, createPlaylist);
+router.route('/:playlistId').patch(verifyJWT, updatePlaylist);
+router.route('/:playlistId').delete(verifyJWT, deletePlaylist);
+router.route('/add/:playlistId/:videoId').patch(verifyJWT, addVideoToPlaylist);
+router.route('/remove/:playlistId/:videoId').patch(verifyJWT, removeVideoFromPlaylist);
 
 
 

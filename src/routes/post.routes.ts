@@ -15,15 +15,15 @@ const router = Router();
 
 ////////////////////////////////  PUBLIC ROUTES  ////////////////////////////////
 
-router.route('/channel/post/:username').get(getUserPosts);
+router.route('/:username').get(getUserPosts);
 
 
 
 ////////////////////////////////  AUTHENTICATED ROUTES  ////////////////////////////////
 
-router.route('/channel/post/create').post(verifyJWT, createPost);
-router.route('/channel/post/:postId').patch(verifyJWT, updatePost);
-router.route('/channel/post/:postId').delete(verifyJWT, deletePost);
+router.route('/create').post(verifyJWT, createPost);
+router.route('/:postId').patch(verifyJWT, updatePost);
+router.route('/:postId').delete(verifyJWT, deletePost);
 
 
 
