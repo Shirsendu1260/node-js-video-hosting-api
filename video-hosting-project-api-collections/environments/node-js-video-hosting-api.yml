@@ -1,4 +1,0 @@
-name: node-js-video-hosting-api
-variables:
-  - name: server
-    value: http://localhost:8000/api/v1
