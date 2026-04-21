@@ -33,8 +33,9 @@ const storage = multer.diskStorage({
 		file: Express.Multer.File,
 		cb: (error: Error | null, destination: string) => void
 	) { // cb -> callback function
-		cb(null, './public/temp'); // error = null, means No error -> store file in ./public/temp
-
+		// cb(null, './public/temp'); // error = null, means No error -> store file in ./public/temp
+		cb(null, '/tmp'); // Render's free tier filesystem is read-only except for /tmp
+		
 		/*
 		When Multer receives a file:
 		Client uploads file -> Multer runs destination() -> Calls cb(null, './public/temp') 
