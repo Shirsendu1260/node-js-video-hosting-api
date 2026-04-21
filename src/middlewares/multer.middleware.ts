@@ -1,20 +1,24 @@
 import multer from 'multer';
+import fs from 'fs';
+import { UPLOAD_DIR } from '../constants.js';
 import type { Request } from 'express';
 
-// By using Multer's file upload middleware, we will save the uploaded file from forms (multipart/form-data) in public/temp folder
+// By using Multer's file upload middleware, we will save the uploaded file from forms 
+// (multipart/form-data) in a specific folder (such as '/tmp/uploads')
 // Then we will collect the file from that location and upload it to Cloudinary cloud storage
 
 /*
 Multer has two main storage types:
-diskStorage → saves file in a folder in disk
-memoryStorage → keeps file in RAM
+diskStorage -> saves file in a folder in disk
+memoryStorage -> keeps file in RAM
 */
 
-/*
-Flow:
-Client uploads file -> Express receives request -> Multer middleware runs
--> File saved in ./public/temp -> Route controller executes
-*/
+// Check if the directory exists or not at startup
+if(!fs.existsSync(UPLOAD_DIR)) {
+	fs.mkdirSync(UPLOAD_DIR, { recursive: true }); 
+	// recursive: true means it won't throw an error if the folder already exists
+	// and it will create it if it doesn't
+}
 
 // Upload files using DiskStorage engine provided by Multer
 const storage = multer.diskStorage({
@@ -34,7 +38,7 @@ const storage = multer.diskStorage({
 		cb: (error: Error | null, destination: string) => void
 	) { // cb -> callback function
 		// cb(null, './public/temp'); // error = null, means No error -> store file in ./public/temp
-		cb(null, '/tmp'); // Render's free tier filesystem is read-only except for /tmp
+		cb(null, UPLOAD_DIR); // Render's free tier filesystem is read-only except for /tmp
 		
 		/*
 		When Multer receives a file:
