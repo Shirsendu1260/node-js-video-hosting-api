@@ -23,7 +23,6 @@ This started as part of the *Chai aur Backend* series, and I extended it signifi
 ## Tech Stack
 
 | | |
-|---|---|
 | Language | TypeScript 5.x |
 | Runtime | Node.js |
 | Framework | Express.js 4.x |
