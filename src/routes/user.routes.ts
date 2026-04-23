@@ -72,7 +72,7 @@ router.route('/sign-in').post(authLimiter, signInUser);
 // general limit (25).
 
 // As in the controller, we used req.params to get 'username', so here also we need to use 'username' with ':' as a prefix
-router.route('/:username').get(getUserChannelDetails);
+router.route('/c/:username').get(getUserChannelDetails);
 
 
 
