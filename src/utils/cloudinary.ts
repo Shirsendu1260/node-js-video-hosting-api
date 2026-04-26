@@ -149,6 +149,7 @@ const cloudinaryDeleter = async (cloudinaryAssetUrl: string): Promise<boolean> =
 
     // Extract public_id from the Cloudinary secure_url
     // URL example: https://res.cloudinary.com/cloud_name/image/upload/v1234567890/folder/subfolder/filename.jpg
+    // Real example: "https://res.cloudinary.com/myprojects/video/upload/v1234567890/node-backend-uploads/video/filename.mp4",
     
     const indexOfUpload = cloudinaryAssetUrl.indexOf("/upload/");
     if (indexOfUpload === -1) {
@@ -168,10 +169,13 @@ const cloudinaryDeleter = async (cloudinaryAssetUrl: string): Promise<boolean> =
     // e.g. "my.photo.jpg" -> "my.photo" not "my"
     const indexOfLastDot = withoutVersion.lastIndexOf('.');
     const publicId = withoutVersion.slice(0, indexOfLastDot);
-    // Final publicId: node-video-hosting-backend-uploads/user/filename
+    // Final publicId: node-video-hosting-backend-uploads/user/filename, node-backend-uploads/video/filename.mp4
     // console.log(publicId);
 
-    const { result } = await cloudinary.uploader.destroy(publicId);
+    // Detect resource type from url
+    const resourceType = cloudinaryAssetUrl.includes('/video/upload/') ? 'video' : 'image';
+
+    const { result } = await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
     
     if (result === 'ok') {
         console.log('DELETE SUCCESSFUL FROM CLOUDINARY. PUBLIC ID:', publicId);
