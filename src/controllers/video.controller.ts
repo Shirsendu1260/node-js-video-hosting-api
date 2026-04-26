@@ -631,8 +631,8 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
             {
                 $set: {
                     // Flips true-false & false-true, whatever resides in 'isPublished' field
-                    // To do this we need $not, which is available in aggregation pipelines
-                    // That's why we used that
+                    // To do this we need $not, which is available in aggregation pipeline
+                    // That's why we used it
                     isPublished: { $not: '$isPublished' }
                 }
             }
@@ -640,7 +640,11 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
 
         {
             returnDocument: 'after',
-            runValidators: true // Enforces Schema validation on update
+            runValidators: true, // Enforces Schema validation on update
+
+            // As we are passing an aggregation pipeline array to findByIdAndUpdate, Mongoose requires to 
+            // be explicitly told via 'updatePipeline' option for that
+            updatePipeline: true
         }
     );
 
