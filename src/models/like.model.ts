@@ -17,15 +17,19 @@ type LikeModel = AggregatePaginateModel<LikeDocument>;
 const likeSchema = new mongoose.Schema<LikeDocument, LikeModel>({
 	comment: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Comment'
+		ref: 'Comment',
+        default: undefined // This forces Mongoose to truly omit the field from the document instead 
+        // of writing null. Then sparse indexes will correctly ignore those documents.
 	},
 	video: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Video'
+		ref: 'Video',
+        default: undefined
 	},
 	post: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Post'
+		ref: 'Post',
+        default: undefined
 	},
 	likedBy: {
 		type: mongoose.Schema.Types.ObjectId,
