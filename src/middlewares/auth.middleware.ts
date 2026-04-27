@@ -155,7 +155,9 @@ export const verifyOptionalJWT = asyncHandler(async (req: Request, _: Response, 
     }
     catch(error) {
         if(error instanceof ApiError) throw error;
-        throw new ApiError(401, error instanceof Error ? error.message : 'Error while verifying token!');
+        // For optional auth, if token is malformed, expired, or invalid,
+        // just ignore it and continue as unauthenticated user
+        return next();
     }
 });
 
