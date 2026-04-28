@@ -255,7 +255,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 
     if(!result || result.docs.length === 0) {
         return res.status(200).json(
-            new ApiResponse(200, result, 'No videos found.')
+            new ApiResponse(200, finalResult, 'No videos found.')
         );
     }
 
