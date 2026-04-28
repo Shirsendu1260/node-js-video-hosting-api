@@ -389,9 +389,137 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     );
 });
 
+
+
+const getLikedPosts = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 4 } = req.query as {
+        page?: string,
+        limit?: string
+    };
+
+    const pageNumber = Number(page);
+    const limitCount = Number(limit);
+
+    if(!req.user) {
+        throw new ApiError(401, 'You are not authenticated to see your liked posts.');
+    }
+
+    const postAggregate = Like.aggregate([
+        // 1. Find all Like documents for this user where he/she liked posts
+        {
+            $match: {
+                post: { $exists: true },
+                likedBy: new mongoose.Types.ObjectId(req.user?._id),
+                isDislike: false // Like
+            }
+        },
+
+        // 2. Filter by latest liked posts
+        {
+            $sort: { createdAt: -1 }
+        },
+
+        // 3. Lookup to get post details with creator
+        //    $lookup always returns an array (e.g., post: [...])
+        {
+            $lookup: {
+                from: 'posts',
+                localField: 'post',
+                foreignField: '_id',
+                as: 'post',
+
+                // Nested pipeline to get user details
+                pipeline: [
+                    // Creator lookup
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'creator', // from 'posts'
+                            foreignField: '_id', // from 'users'
+                            as: 'creator',
+
+                            // Nested pipeline to extract required details from creator
+                            pipeline: [
+                                {
+                                    $project: {
+                                        username: 1,
+                                        fullName: 1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+
+                    // $addFields with $first: Since $lookup always returns an array (even if there is only one creator), 
+                    // $first: '$creator' converts that array into a single object for easier use in the frontend
+                    {
+                        $addFields: {
+                            creator: { $first: '$creator' }
+                        }
+                    }
+                ]
+            }
+        },
+
+        // 4. Flatten the post array.
+        //    If we don't use $unwind, in frontend, we will have to access data like 
+        //    result.docs[0].post[0].title, which is annoying and error-prone. $unwind flattens that 
+        //    array into a single object so we can just use result.docs[0].post.title
+        {
+            $unwind: "$post"
+        },
+
+        // 5. Finally construct each object at the top level
+        {
+            $addFields: {
+                _id: '$post._id',
+                content: '$post.content',
+                image: '$post.image',
+                creator: '$post.creator',
+                likedAt: '$createdAt'
+            }
+        },
+
+        // Remove the redundant post object and other reduntant fields
+        {
+            $project: { 
+                // Drop redundant post object, data is already flattened to top-level
+                post: 0, 
+
+                // Remove Mongoose version key, it's useless for the frontend
+                __v: 0, 
+
+                // User already knows they liked these, no need to return their own id
+                likedBy: 0
+            }
+        }
+    ]);
+
+    const options = {
+        page: pageNumber,
+        limit: limitCount
+    };
+
+    const result = await Like.aggregatePaginate(postAggregate, options);
+
+    if(!result || result.docs.length === 0) {
+        return res.status(200).json(
+            new ApiResponse(200, result, '0 liked posts.')
+        );
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, result, 'All liked posts fetched successfully.')
+    );
+});
+
+
+
 export {
     toggleCommentLikeDislike,
     togglePostLikeDislike,
     toggleVideoLikeDislike,
-    getLikedVideos
+    getLikedVideos,
+    getLikedPosts
 };
