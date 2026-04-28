@@ -67,11 +67,31 @@ const getChannelStats = asyncHandler(async (req, res) => {
         // At this point, the key named 'subscribers' is ready containing an array of Subscription 
         // documents for this User document
 
-        // 4. Count the derived fields
+        // 4. Get all subscribed channels of this channel
+        {
+            $lookup: {
+                from: 'subscriptions',
+                localField: '_id',
+                foreignField: 'subscriber',
+                as: 'channels',
+
+                // Only extracting id to make the data size for each channel less
+                pipeline: [
+                    {
+                        $project: { _id: 1 }
+                    }
+                ]
+            }
+        },
+        // At this point, the key named 'channels' is ready containing an array of Subscription 
+        // documents for this User document
+
+        // 5. Count the derived fields
         {
             $addFields: {
                 totalVideos: { $size: '$videos' },
                 totalSubscribers: { $size: '$subscribers' },
+                totalSubscribedChannels: { $size: '$channels' },
 
                 totalVideoViews: {
                     // $reduce transforms an array into a single value (e.g., summing up numbers)
@@ -112,12 +132,13 @@ const getChannelStats = asyncHandler(async (req, res) => {
             }
         },
 
-        // 5. Extracting required fields
+        // 6. Extracting required fields
         {
             $project: {
                 username: 1,
                 totalVideos: 1,
                 totalSubscribers: 1,
+                totalSubscribedChannels: 1,
                 totalVideoViews: 1,
                 totalVideoLikes: 1
             }
