@@ -17,14 +17,14 @@ const toggleSubscription = asyncHandler(async (req, res) => {
         throw new ApiError(401, 'You need to be authenticated to subscribe this channel.');
     }
 
+    if(decodedChannelId === req.user?._id.toString()) {
+        throw new ApiError(400, 'You cannot subscribe/unsubscribe to your own channel.');
+    }
+
     // A channel is indeed a user, so get it details
     const channel = await User.findById(decodedChannelId).select('_id').lean();
     if(!channel) {
         throw new ApiError(404, 'Channel not found.');
-    }
-
-    if(channel._id.toString() === req.user?._id.toString()) {
-        throw new ApiError(401, 'You cannot subscribe/unsubscribe to your own channel.');
     }
 
     let result = { subscribed: false };
