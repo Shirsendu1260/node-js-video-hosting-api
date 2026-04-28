@@ -23,6 +23,10 @@ const toggleSubscription = asyncHandler(async (req, res) => {
         throw new ApiError(404, 'Channel not found.');
     }
 
+    if(channel._id.toString() === req.user?._id.toString()) {
+        throw new ApiError(401, 'You cannot subscribe/unsubscribe to your own channel.');
+    }
+
     let result = { subscribed: false };
 
     // If logged in, check if the user had subscribed this channel or not
