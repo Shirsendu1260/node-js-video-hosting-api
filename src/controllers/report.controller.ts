@@ -2,6 +2,9 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { Report } from '../models/report.model.js';
+import { Video } from '../models/video.model.js';
+import { Post } from '../models/post.model.js';
+import { Comment } from '../models/comment.model.js';
 import type { IErrorMessage } from "../utils/ApiError.js";
 import getBase64DecodedId from "../utils/decodeBase64Id.js";
 import Joi from 'joi';
@@ -9,7 +12,7 @@ import mongoose from 'mongoose';
 
 
 
-// For submitting a new report for a Video or Post
+// For submitting a new report for a Video, Comment or Post
 const submitReport = asyncHandler(async (req, res) => {
 	const { targetModel, reason, details } = req.body as {
 		targetModel: string,
@@ -29,7 +32,7 @@ const submitReport = asyncHandler(async (req, res) => {
 	const validatorSchema = Joi.object({
 		targetModel: Joi.string()
                         .trim()
-                        .valid('Video', 'Post')
+                        .valid('Video', 'Post', 'Comment')
                         .required()
                         .messages({
                           'any.only': 'targetModel must be Video or Post.',
@@ -97,7 +100,7 @@ const submitReport = asyncHandler(async (req, res) => {
 
 const updateReportStatus = asyncHandler(async (req, res) => {
     const { reportId } = req.params as { reportId: string };
-    const { status } = req.body as { status: string };
+    const { status } = req.body as { status: 'PEND' | 'REV' | 'RES' };
 
     const decodedReportId = getBase64DecodedId(reportId);
 
@@ -120,6 +123,32 @@ const updateReportStatus = asyncHandler(async (req, res) => {
 
     if(!reportUpdated) {
         throw new ApiError(404, 'Report not found.');
+    }
+
+    // When admin resolves a report, hide the content
+    if(status === 'RES') {
+        if(reportUpdated.targetModel === 'Video') {
+            await Video.findByIdAndUpdate(reportUpdated.targetId, { isHidden: true });
+        }
+        else if(reportUpdated.targetModel === 'Post') {
+            await Post.findByIdAndUpdate(reportUpdated.targetId, { isHidden: true });
+        }
+        else {
+            await Comment.findByIdAndUpdate(reportUpdated.targetId, { isHidden: true });
+        }
+    }
+
+    // When admin updates report back to PEND or REV, unhide the content
+    if(status === 'PEND' || status === 'REV') {
+        if(reportUpdated.targetModel === 'Video') {
+            await Video.findByIdAndUpdate(reportUpdated.targetId, { isHidden: false });
+        }
+        else if(reportUpdated.targetModel === 'Post') {
+            await Post.findByIdAndUpdate(reportUpdated.targetId, { isHidden: false });
+        }
+        else {
+            await Comment.findByIdAndUpdate(reportUpdated.targetId, { isHidden: false });
+        }
     }
 
     return res.status(200).json(

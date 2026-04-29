@@ -65,13 +65,15 @@ const getAllVideos = asyncHandler(async (req, res) => {
         creator?: mongoose.Types.ObjectId
         isShorts: boolean, // Utilizes the compound indexes
         isPublished?: boolean, // Utilizes the compound indexes
+        isHidden?: boolean, // Utilizes the compound indexes
         $text?: { // Utilizes the text index
             $search: string
         }
     };
 
     let matchCondition: MatchCondition = {
-        isShorts: isShortsFlag
+        isShorts: isShortsFlag,
+        isHidden: false
     };
 
     const user = await User.findOne({ username }).select('_id');
@@ -390,6 +392,11 @@ const getVideoById = asyncHandler(async (req, res) => {
     const video = await Video.findById(decodedVideoId);
 
     if(!video) {
+        throw new ApiError(404, "Video not found");
+    }
+
+    // Block access to hidden videos for non-admin users
+    if(video.isHidden && !req.user?.isAdmin) {
         throw new ApiError(404, "Video not found");
     }
 

@@ -41,11 +41,13 @@ const getComments = asyncHandler(async (req, res) => {
     type MatchCondition = {
         video?: mongoose.Types.ObjectId,
         post?: mongoose.Types.ObjectId,
-        isChildComment: false
+        isChildComment: false,
+        isHidden: false
     };
 
     const matchCondition: MatchCondition = {
-        isChildComment: false
+        isChildComment: false,
+        isHidden: false
     };
 
     if(videoId) {

@@ -98,7 +98,8 @@ const getUserPosts = asyncHandler(async (req, res) => {
         // Match by the user
         {
             $match: {
-                creator: new mongoose.Types.ObjectId(user._id)
+                creator: new mongoose.Types.ObjectId(user._id),
+                isHidden: false
             }
         },
 

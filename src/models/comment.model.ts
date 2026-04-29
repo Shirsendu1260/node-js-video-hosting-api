@@ -11,7 +11,8 @@ interface IComment {
  	likesCount: number,
  	dislikesCount: number,
  	isChildComment: boolean, // isChildComment = true means it's a reply of a parent comment
- 	parentComment?: mongoose.Types.ObjectId
+ 	parentComment?: mongoose.Types.ObjectId,
+    isHidden: boolean
 }
 
 type CommentDocument = IComment & Document;
@@ -51,7 +52,13 @@ const commentSchema = new mongoose.Schema<CommentDocument, CommentModel>({
  	parentComment: {
  		type: mongoose.Schema.Types.ObjectId,
  		ref: 'Comment',
- 	}
+ 	},
+    isHidden: {
+        type: Boolean,
+ 		default: false,
+ 		required: [true, 'Hide flag is required.'],
+        index: true
+    }
 }, { timestamps: true });
 
 commentSchema.plugin(mongooseAggregatePaginate as any);

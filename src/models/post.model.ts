@@ -8,6 +8,7 @@ interface IPost {
 	image?: string,
 	likesCount: number,
  	dislikesCount: number,
+    isHidden: boolean
 }
 
 type PostDocument = IPost & Document;
@@ -34,6 +35,12 @@ const postSchema = new mongoose.Schema<PostDocument, PostModel>({
  		type: Number,
  		default: 0
  	},
+ 	isHidden: {
+        type: Boolean,
+ 		default: false,
+ 		required: [true, 'Hide flag is required.'],
+        index: true
+    }
 }, { timestamps: true });
 
 postSchema.plugin(mongooseAggregatePaginate as any);

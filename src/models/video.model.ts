@@ -31,7 +31,8 @@ interface IVideo {
     likesCount: number,
  	dislikesCount: number,
     isPublished: boolean,
-    isShorts: boolean // Is a short format video or not
+    isShorts: boolean, // Is a short format video or not
+    isHidden: boolean
 }
 
 type VideoDocument = IVideo & Document;
@@ -115,7 +116,13 @@ const videoSchema = new mongoose.Schema<VideoDocument, VideoModel>({
         required: true,
         default: false,
         index: true // We index this to separate Shorts from Long-form videos efficiently
-	}
+	},
+	isHidden: {
+        type: Boolean,
+ 		default: false,
+ 		required: [true, 'Hide flag is required.'],
+        index: true
+    }
 }, { timestamps: true });
 
 
