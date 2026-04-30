@@ -1,0 +1,50 @@
+info:
+  name: Sign Up
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{server}}/user/sign-up"
+  body:
+    type: multipart-form
+    data:
+      - name: fullName
+        type: text
+        value: ADMIN
+        contentType: Text
+      - name: username
+        type: text
+        value: test_username
+        contentType: Text
+      - name: email
+        type: text
+        value: test_username@gmail.com
+        contentType: Text
+      - name: gender
+        type: text
+        value: F
+        contentType: Text
+      - name: password
+        type: text
+        value: "{{testPassword}}"
+        contentType: Text
+      - name: confirmedPassword
+        type: text
+        value: "{{testPassword}}"
+        contentType: Text
+      - name: avatar
+        type: file
+        value:
+          - /home/tuban/Downloads/vid_samples/avatars/dog.jpg
+        contentType: File
+      - name: coverImage
+        type: text
+        value: ""
+        contentType: File
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

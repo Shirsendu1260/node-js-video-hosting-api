@@ -1,0 +1,22 @@
+info:
+  name: Get My Liked Videos
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{server}}/like/liked-videos?page=1&limit=4"
+  params:
+    - name: page
+      value: "1"
+      type: query
+    - name: limit
+      value: "4"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

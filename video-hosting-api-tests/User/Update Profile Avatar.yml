@@ -1,0 +1,23 @@
+info:
+  name: Update Profile Avatar
+  type: http
+  seq: 2
+
+http:
+  method: PATCH
+  url: "{{server}}/user/update-profile-avatar"
+  body:
+    type: multipart-form
+    data:
+      - name: avatar
+        type: file
+        value:
+          - /home/tuban/Downloads/vid_samples/avatars/kolkata_taxi.jpg
+        contentType: File
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

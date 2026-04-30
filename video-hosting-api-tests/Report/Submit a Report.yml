@@ -1,0 +1,23 @@
+info:
+  name: Submit a Report
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{server}}/report/{{targetId}}"
+  body:
+    type: json
+    data: |-
+      {
+          "targetModel": "Video",
+          "reason": "Other",
+          "details": "I don't like it."
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

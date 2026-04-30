@@ -1,0 +1,21 @@
+info:
+  name: Toggle Like/Dislike on a Video
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{server}}/like/video/{{base64VideoId}}"
+  body:
+    type: json
+    data: |-
+      {
+          "action": "like"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

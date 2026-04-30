@@ -1,0 +1,53 @@
+info:
+  name: Sign In
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{server}}/user/sign-in"
+  body:
+    type: json
+    data: |-
+      {
+        "username": "test_username",
+        "password": "{{testPassword}}"
+      }
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        // Check if the request was successful or not
+        if(res.status === 200) {
+          const result = res.body;
+          
+          // API returns in this format
+          // { "data": { "user": {}, "accessToken": "...", "refreshToken": "..." } }
+          const accessToken = result.data.accessToken;
+          const refreshToken = result.data.refreshToken;
+          
+          if(accessToken) {
+            bru.setEnvVar('accessToken', accessToken);
+            console.log('accessToken captured.');
+          }
+          else {
+            bru.setEnvVar('accessToken', '');
+            console.log('accessToken not found in response body.');
+          }
+
+          if(refreshToken) {
+            bru.setEnvVar('refreshToken', refreshToken);
+            console.log('refreshToken captured.');
+          }
+          else {
+            bru.setEnvVar('refreshToken', '');
+            console.log('refreshToken not found in response body.');
+          }
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,26 @@
+info:
+  name: Sign Out
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{server}}/user/sign-out"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        // Check if the request was successful or not
+        if(res.status === 200) {
+          bru.setEnvVar('accessToken', '');
+          bru.setEnvVar('refreshToken', '');
+          console.log('accessToken & refreshToken destroyed.');
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

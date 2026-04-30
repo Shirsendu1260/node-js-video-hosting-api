@@ -1,0 +1,32 @@
+name: Production
+variables:
+  - secret: true
+    name: server
+  - secret: true
+    name: accessToken
+  - secret: true
+    name: testPassword
+  - secret: true
+    name: refreshToken
+  - secret: true
+    name: newTestPassword
+  - secret: true
+    name: base64VideoId
+  - secret: true
+    name: username
+  - secret: true
+    name: base64ParentCommentId
+  - secret: true
+    name: base64PostId
+  - secret: true
+    name: base64CommentId
+  - secret: true
+    name: base64UserId
+  - secret: true
+    name: base64PlaylistId
+  - secret: true
+    name: base64ChannelId
+  - secret: true
+    name: targetId
+  - secret: true
+    name: base64ReportId

@@ -1,0 +1,21 @@
+info:
+  name: Add Comment to a Post
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{server}}/comment/{{base64PostId}}/add"
+  body:
+    type: json
+    data: |-
+      {
+          "content": "Nice capture!"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

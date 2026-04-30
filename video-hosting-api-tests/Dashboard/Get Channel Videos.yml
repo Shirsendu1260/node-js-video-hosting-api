@@ -1,0 +1,31 @@
+info:
+  name: Get Channel Videos
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{server}}/dashboard/{{username}}/videos?page=1&limit=4&sortBy=createdAt&sortType=-1&isShorts=true"
+  params:
+    - name: page
+      value: "1"
+      type: query
+    - name: limit
+      value: "4"
+      type: query
+    - name: sortBy
+      value: createdAt
+      type: query
+    - name: sortType
+      value: "-1"
+      type: query
+    - name: isShorts
+      value: "true"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,22 @@
+info:
+  name: Update Playlist
+  type: http
+  seq: 6
+
+http:
+  method: PATCH
+  url: "{{server}}/playlist/{{base64PlaylistId}}"
+  body:
+    type: json
+    data: |-
+      {
+          "name": "My Playlist 001",
+          "description": "Demo playlist updated description"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,21 @@
+info:
+  name: Update a Post
+  type: http
+  seq: 3
+
+http:
+  method: PATCH
+  url: "{{server}}/post/{{base64PostId}}"
+  body:
+    type: json
+    data: |-
+      {
+          "content": "Beautiful Hooghly Bridge captured from Princep Ghat."
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,21 @@
+info:
+  name: Add Comment to a Video
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{server}}/comment/{{base64VideoId}}/add"
+  body:
+    type: json
+    data: |-
+      {
+          "content": "Demo123"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

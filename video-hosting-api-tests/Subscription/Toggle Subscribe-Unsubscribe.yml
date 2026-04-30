@@ -1,0 +1,15 @@
+info:
+  name: Toggle Subscribe/Unsubscribe
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{server}}/subscription/{{base64ChannelId}}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

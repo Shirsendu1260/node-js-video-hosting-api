@@ -1,0 +1,21 @@
+info:
+  name: Add Reply to a Comment
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{server}}/comment/{{base64VideoId}}/{{base64ParentCommentId}}/add"
+  body:
+    type: json
+    data: |-
+      {
+          "content": "Nature is beautiful."
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

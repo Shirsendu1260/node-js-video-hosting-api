@@ -1,0 +1,21 @@
+info:
+  name: Toggle Like/Dislike on a Post
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{server}}/like/post/{{base64PostId}}"
+  body:
+    type: json
+    data: |-
+      {
+          "action": "like"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

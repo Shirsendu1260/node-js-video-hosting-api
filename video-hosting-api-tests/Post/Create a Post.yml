@@ -1,0 +1,27 @@
+info:
+  name: Create a Post
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{server}}/post/create"
+  body:
+    type: multipart-form
+    data:
+      - name: content
+        type: text
+        value: test
+        contentType: Text
+      - name: image
+        type: file
+        value:
+          - /home/tuban/Downloads/vid_samples/post/sauvik-bose-2VHTAW_p2UM-unsplash.jpg
+        contentType: File
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

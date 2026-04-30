@@ -1,0 +1,15 @@
+info:
+  name: Delete Playlist
+  type: http
+  seq: 7
+
+http:
+  method: DELETE
+  url: "{{server}}/playlist/{{base64PlaylistId}}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

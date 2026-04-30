@@ -1,0 +1,23 @@
+info:
+  name: Update Video Thumbnail
+  type: http
+  seq: 5
+
+http:
+  method: PATCH
+  url: "{{server}}/video/{{base64VideoId}}/thumbnail"
+  body:
+    type: multipart-form
+    data:
+      - name: thumbnail
+        type: file
+        value:
+          - /home/tuban/Downloads/vid_samples/thumbs/Screenshot_2026-04-25_23-22-41.jpg
+        contentType: File
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,22 @@
+info:
+  name: Get My Liked Posts
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{server}}/like/liked-posts?page=1&limit=4"
+  params:
+    - name: page
+      value: "1"
+      type: query
+    - name: limit
+      value: "4"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

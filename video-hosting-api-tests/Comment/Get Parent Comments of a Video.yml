@@ -1,0 +1,25 @@
+info:
+  name: Get Parent Comments of a Video
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{server}}/comment/{{base64VideoId}}?page=1&limit=4&sortType=-1"
+  params:
+    - name: page
+      value: "1"
+      type: query
+    - name: limit
+      value: "4"
+      type: query
+    - name: sortType
+      value: "-1"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

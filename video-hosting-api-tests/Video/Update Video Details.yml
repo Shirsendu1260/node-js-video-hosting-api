@@ -1,0 +1,22 @@
+info:
+  name: Update Video Details
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{server}}/video/{{base64VideoId}}"
+  body:
+    type: json
+    data: |-
+      {
+          "title": "A temple in Northern India",
+          "description": "Updated description 01"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

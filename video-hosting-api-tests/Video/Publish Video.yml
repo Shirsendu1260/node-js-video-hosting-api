@@ -1,0 +1,41 @@
+info:
+  name: Publish Video
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{server}}/video/publish"
+  body:
+    type: multipart-form
+    data:
+      - name: title
+        type: text
+        value: Beach drone shot
+        contentType: Text
+      - name: description
+        type: text
+        value: Test description 005
+        contentType: Text
+      - name: isShorts
+        type: text
+        value: "true"
+        contentType: Text
+        disabled: true
+      - name: video
+        type: file
+        value:
+          - /home/tuban/Downloads/vid_samples/35264-407130725_tiny.mp4
+        contentType: File
+      - name: thumbnail
+        type: file
+        value:
+          - /home/tuban/Downloads/vid_samples/thumbs/Screenshot_2026-04-26_14-20-10.jpg
+        contentType: File
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

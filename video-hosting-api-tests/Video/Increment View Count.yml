@@ -1,0 +1,15 @@
+info:
+  name: Increment View Count
+  type: http
+  seq: 3
+
+http:
+  method: PATCH
+  url: "{{server}}/video/{{base64VideoId}}/view"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

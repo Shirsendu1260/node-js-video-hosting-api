@@ -1,0 +1,38 @@
+info:
+  name: Get All Videos
+  type: http
+  seq: 8
+
+http:
+  method: GET
+  url: "{{server}}/video/all?page=1&limit=4&sortBy=views&sortType=desc&isShorts=false"
+  params:
+    - name: page
+      value: "1"
+      type: query
+    - name: limit
+      value: "4"
+      type: query
+    - name: query
+      value: Auto
+      type: query
+      disabled: true
+    - name: sortBy
+      value: views
+      type: query
+    - name: sortType
+      value: desc
+      type: query
+    - name: isShorts
+      value: "false"
+      type: query
+    - name: username
+      value: testkm
+      type: query
+      disabled: true
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
