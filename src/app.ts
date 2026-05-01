@@ -15,6 +15,8 @@ import reportRouter from './routes/report.routes.js';
 import type { Request, Response, NextFunction } from 'express';
 import { ApiError } from './utils/ApiError.js';
 import { generalLimiter } from './middlewares/rateLimiter.middleware.js';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './docs/swagger.js';
 
 
 
@@ -45,15 +47,6 @@ app.set('trust proxy', 1); // Trust first proxy (proxy/load balancer)
 // first one, it reads that correctly. Any spoofed headers deeper in the chain are ignored.
 // This is the secure production-standard setting for any single-proxy deployment.
 
-// Learning:
-// This is a very real and common backend concept. In production, our app almost never sits directly 
-// on the internet; there's always a proxy, load balancer, or CDN in front. Understanding the proxy 
-// chain is important because it affects:
-// Rate limiting (IP identification)
-// Logging real user IPs
-// HTTPS detection (req.secure)
-// Geo-location based on IP
-
 
 
 
@@ -62,8 +55,12 @@ app.set('trust proxy', 1); // Trust first proxy (proxy/load balancer)
 
 // 1. Allow requests from frontend (CORS setup)
 app.use(cors({
-	origin: process.env.CORS_ORIGIN, // Allowed frontend URL
-	credentials: true               // Allow cookies/auth headers
+	origin: process.env.CORS_ORIGIN,
+	// Must be a specific origin (cannot be '*') when credentials are enabled
+
+	credentials: true
+	// Allows browsers to send cookies, authorization headers
+    // Required if our API uses cookie-based authentication (e.g., HttpOnly JWT cookies)
 }));
 
 // 2. Parse incoming JSON request bodies (without this req.body would be undefined)
@@ -85,7 +82,7 @@ app.use(express.static('public'));
 app.use(cookieParser());
 
 // 6. With rate limiter middleware, restricting client how many max. requests he/she can make to 
-//    our API within a time window specified in the middleware
+//    our APIs within a time window specified in the middleware
 app.use(generalLimiter);
 
 
@@ -96,6 +93,7 @@ app.use(generalLimiter);
 
 ///// Routes declaration /////
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec)); // API documentation
 app.use('/api/v1/user', userRouter); //  /api/v1/ -> API versioning
 app.use('/api/v1/video', videoRouter);
 app.use('/api/v1/like', likeRouter);

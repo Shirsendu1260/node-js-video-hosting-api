@@ -14,7 +14,7 @@ import {
 } from '../controllers/user.controller.js';
 import { upload } from '../middlewares/multer.middleware.js';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
-import { authLimiter } from '../middlewares/rateLimiter.middleware.js';
+import { authLimiter, signUpLimiter } from '../middlewares/rateLimiter.middleware.js';
 
 
 
@@ -25,6 +25,7 @@ const router = Router();
 ////////////////////////////////  PUBLIC ROUTES  ////////////////////////////////
 
 router.route('/sign-up').post(
+	signUpLimiter, // Max 5 account creation per IP per 'window'
 	authLimiter, // His/her auth limit in that time window is 6
 
 	/*

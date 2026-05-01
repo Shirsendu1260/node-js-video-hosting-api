@@ -34,6 +34,20 @@ export const authLimiter = rateLimit({
 
 
 
+export const signUpLimiter = rateLimit({
+	windowMs: 24 * 60 * 60 * 1000, // 1 day
+	max: 5, // Max 5 account creation per IP per 'window'
+	standardHeaders: 'draft-8', // Sends standard RateLimit headers in response
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+	message: {
+		statusCode: 429,
+		success: false,
+		message: 'Too many accounts created from this IP.'
+	}
+});
+
+
+
 // Flow:
 // Request comes in from IP 103.21.x.x
 // Find or create a record: { ip: "103.21.x.x", count: 0, windowStart: now }

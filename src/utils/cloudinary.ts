@@ -26,13 +26,14 @@ const cloudinaryUploader = async (
   if(!localFilePath) return null;
 
   // Identify file type for a video
-  const isVideo = localFilePath.match(/\.(mp4|mov|avi|mkv|webm)$/i);
+  const isVideo = localFilePath.match(/\.(mp4|mkv|webm)$/i);
 
   const options: UploadApiOptions = {
     use_filename: true, // Use original filename as public_id (unique identifier of the uploaded file)
     unique_filename: false, // Don't append random suffix to filename
     overwrite: true, // Overwrite if same filename already exists
     resource_type: 'auto', // Auto-detect file type (image, video, raw)
+    allowed_formats: ['mp4', 'webm', 'mkv', 'jpg', 'png', 'jpeg'],
     folder: 'node-video-hosting-backend-uploads/' + subFolder
   };
 

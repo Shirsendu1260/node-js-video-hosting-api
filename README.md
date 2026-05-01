@@ -41,6 +41,7 @@ This started as part of the *Chai aur Backend* series, and I extended it signifi
 src/
 ├── controllers/     # business logic for each feature
 ├── db/              # MongoDB connection
+├── docs/            # swagger configuration
 ├── middlewares/     # auth (JWT), multer, rate limiter
 ├── models/          # Mongoose schemas + TS interfaces
 ├── routes/          # route definitions
@@ -67,7 +68,8 @@ Create a `.env` file in the root:
 ```env
 PORT=8000
 MONGODB_URI=your_mongodb_uri
-CORS_ORIGIN=your_frontend_url
+CORS_ORIGIN=your_origin
+NODE_ENV=local
 
 ACCESS_TOKEN_SECRET_KEY=your_secret
 ACCESS_TOKEN_SECRET_KEY_EXPIRY=1d

@@ -76,15 +76,16 @@ const signUpUser = asyncHandler(async (req, res) => {
                       'any.required': 'Gender is required.'
                     }),
     	password: Joi.string()
-                    .alphanum()
-                    .min(6)
-                    .max(50)
-                    .required()
-                    .messages({
-                      'string.min': 'Password must be at least 6 characters.',
-                      'string.max': 'Password cannot exceed 50 characters.',
-                      'string.empty': 'Password is required.',
-                      'any.required': 'Password is required.'
+                        .min(6)
+                        .max(50)
+                        .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$"))
+                        .required()
+                        .messages({
+                          'string.pattern.base': 'Password must include uppercase, lowercase, and number',
+                          'string.min': 'Password must be at least 6 characters.',
+                          'string.max': 'Password cannot exceed 50 characters.',
+                          'string.empty': 'Password is required.',
+                          'any.required': 'Password is required.'
                     }),
         confirmedPassword: Joi.string()
                                 .valid(Joi.ref('password'))
