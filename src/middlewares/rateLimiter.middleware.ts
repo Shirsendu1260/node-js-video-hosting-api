@@ -6,7 +6,7 @@ import rateLimit from 'express-rate-limit';
 // Prevents server abuse
 export const generalLimiter = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 minutes
-	limit: 35, // Limit each IP to 35 requests per 'window' (here, per 15 minutes)
+	limit: 40, // Limit each IP to 40 requests per 'window' (here, per 15 minutes)
 	standardHeaders: 'draft-8', // Sends standard RateLimit headers in response
 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 	message: {
@@ -55,7 +55,7 @@ export const signUpLimiter = rateLimit({
 // Is (count > limit)? No -> allow request
 // Next request -> count = 2 -> Is (count > limit)? No -> allow request
 // ...
-// count = 36 -> Is (count > limit)? Yes -> block this request -> send 429 response
+// count = 41 -> Is (count > limit)? Yes -> block this request -> send 429 response
 // Window expires after 15 min -> count resets to 0
 
 
@@ -91,6 +91,6 @@ export const signUpLimiter = rateLimit({
 // Redis is only needed when we scale to multiple server instances. We are nowhere near that.
 
 
-// It's 36 requests total to the entire server per IP in 15 minutes, not 36 per route.
-// So if a single IP hits /api/v1/video/all 31 times and /api/v1/user/get-auth-user 4 times, 
-// that's 36 total, they're blocked on the 36th request regardless of which route it hits.
+// It's 40 requests total to the entire server per IP in 15 minutes, not 40 per route.
+// So if a single IP hits /api/v1/video/all 36 times and /api/v1/user/get-auth-user 4 times, 
+// that's 41 total, they're blocked on the 41th request regardless of which route it hits.
