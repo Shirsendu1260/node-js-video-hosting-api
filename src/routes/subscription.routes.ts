@@ -12,15 +12,10 @@ const router = Router();
 
 
 
-////////////////////////////////  PUBLIC ROUTES  ////////////////////////////////
-
-router.route('/:channelId/subscribers').get(getUserChannelSubscribers);
-router.route('/:channelId/channels').get(getSubscribedChannels);
-
-
-
 ////////////////////////////////  AUTHENTICATED ROUTES  ////////////////////////////////
 
+router.route('/:channelId/subscribers').get(verifyJWT, getUserChannelSubscribers);
+router.route('/:channelId/channels').get(verifyJWT, getSubscribedChannels);
 router.route('/:channelId').post(verifyJWT, toggleSubscription);
 
 
