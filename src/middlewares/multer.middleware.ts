@@ -2,6 +2,8 @@ import multer from 'multer';
 import fs from 'fs';
 import { UPLOAD_DIR } from '../constants.js';
 import type { Request } from 'express';
+import type { FileFilterCallback } from 'multer';
+import { ApiError } from '../utils/ApiError.js';
 
 // By using Multer's file upload middleware, we will save the uploaded file from forms 
 // (multipart/form-data) in a specific folder (such as '/tmp/uploads')
@@ -58,7 +60,30 @@ const storage = multer.diskStorage({
 	}
 });
 
+const fileFilter = (
+	req: Request,
+	file: Express.Multer.File,
+	cb: FileFilterCallback
+) => {
+	const allowedTypes = [
+		'image/jpeg',
+		'image/jpg',
+		'image/png',
+		'video/mp4',
+		'video/webm',
+		'video/mkv'
+	];
+
+	if(allowedTypes.includes(file.mimetype)) {
+		cb(null, true); // true -> accept the file
+	}
+	else {
+		cb(new ApiError(400, `'${file.mimetype.toUpperCase()}' filetype is not allowed.`));
+	}
+}
+
 export const upload = multer({ 
 	storage,
-	limits: { fileSize: 15 * 1024 * 1024 } // 15MB Max
+	limits: { fileSize: 15 * 1024 * 1024 }, // 15MB Max
+	fileFilter
 });
