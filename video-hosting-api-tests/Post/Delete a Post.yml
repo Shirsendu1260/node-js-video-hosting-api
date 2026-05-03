@@ -5,7 +5,7 @@ info:
 
 http:
   method: DELETE
-  url: "{{server}}/post/{{base64PostId}}"
+  url: "{{server}}/post/p/{{base64PostId}}"
   auth: inherit
 
 settings:

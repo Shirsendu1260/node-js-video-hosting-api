@@ -5,7 +5,7 @@ info:
 
 http:
   method: DELETE
-  url: "{{server}}/playlist/{{base64PlaylistId}}"
+  url: "{{server}}/playlist/p/{{base64PlaylistId}}"
   auth: inherit
 
 settings:

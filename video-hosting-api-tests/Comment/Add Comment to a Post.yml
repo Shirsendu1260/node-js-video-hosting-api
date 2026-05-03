@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{server}}/comment/{{base64PostId}}/add"
+  url: "{{server}}/comment/p/{{base64PostId}}/add"
   body:
     type: json
     data: |-

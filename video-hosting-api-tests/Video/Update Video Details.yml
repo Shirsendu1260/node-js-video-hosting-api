@@ -5,7 +5,7 @@ info:
 
 http:
   method: PATCH
-  url: "{{server}}/video/{{base64VideoId}}"
+  url: "{{server}}/video/v/{{base64VideoId}}"
   body:
     type: json
     data: |-

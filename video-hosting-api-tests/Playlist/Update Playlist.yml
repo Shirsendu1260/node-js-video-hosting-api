@@ -5,7 +5,7 @@ info:
 
 http:
   method: PATCH
-  url: "{{server}}/playlist/{{base64PlaylistId}}"
+  url: "{{server}}/playlist/p/{{base64PlaylistId}}"
   body:
     type: json
     data: |-

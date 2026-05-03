@@ -5,7 +5,7 @@ info:
 
 http:
   method: PATCH
-  url: "{{server}}/playlist/add/{{base64PlaylistId}}/{{base64VideoId}}"
+  url: "{{server}}/playlist/add/p/{{base64PlaylistId}}/v/{{base64VideoId}}"
   auth: inherit
 
 settings:

@@ -1,16 +1,16 @@
 info:
-  name: Add Reply to a Comment
+  name: Add Reply to a Comment of a Post
   type: http
-  seq: 3
+  seq: 10
 
 http:
   method: POST
-  url: "{{server}}/comment/{{base64VideoId}}/{{base64ParentCommentId}}/add"
+  url: "{{server}}/comment/p/{{base64PostId}}/reply/{{base64ParentCommentId}}/add"
   body:
     type: json
     data: |-
       {
-          "content": "Nature is beautiful."
+          "content": "Best."
       }
   auth: inherit
 

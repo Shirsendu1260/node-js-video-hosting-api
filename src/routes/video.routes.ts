@@ -21,7 +21,7 @@ const router = Router();
 ////////////////////////////////  PUBLIC ROUTES  ////////////////////////////////
 
 router.route('/all').get(verifyOptionalJWT, getAllVideos);
-router.route('/:videoId').get(getVideoById);
+router.route('/v/:videoId').get(getVideoById);
 router.route('/:videoId/view').patch(verifyOptionalJWT, incrementVideoView);
 
 
@@ -36,13 +36,13 @@ router.route('/publish').post(
 	]),
 	publishVideo
 );
-router.route('/:videoId').patch(verifyJWT, updateVideo);
+router.route('/v/:videoId').patch(verifyJWT, updateVideo);
 router.route('/:videoId/thumbnail').patch(
 	verifyJWT,
 	upload.single('thumbnail'),
 	updateVideoThumbnail
 );
-router.route('/:videoId').delete(verifyJWT, deleteVideo);
+router.route('/v/:videoId').delete(verifyJWT, deleteVideo);
 router.route('/:videoId/publish-status').patch(verifyJWT, togglePublishStatus);
 
 

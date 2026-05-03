@@ -1,0 +1,15 @@
+info:
+  name: Get Replies of a Comment of a Post
+  type: http
+  seq: 9
+
+http:
+  method: GET
+  url: "{{server}}/comment/p/{{base64PostId}}/reply/{{base64ParentCommentId}}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

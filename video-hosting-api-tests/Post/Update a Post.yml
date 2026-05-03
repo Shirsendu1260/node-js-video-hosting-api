@@ -5,7 +5,7 @@ info:
 
 http:
   method: PATCH
-  url: "{{server}}/post/{{base64PostId}}"
+  url: "{{server}}/post/p/{{base64PostId}}"
   body:
     type: json
     data: |-

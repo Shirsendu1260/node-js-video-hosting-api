@@ -1,18 +1,16 @@
 info:
-  name: Submit a Report
+  name: Add Reply to a Comment of a Video
   type: http
-  seq: 1
+  seq: 3
 
 http:
   method: POST
-  url: "{{server}}/report/r/{{targetId}}"
+  url: "{{server}}/comment/v/{{base64VideoId}}/reply/{{base64ParentCommentId}}/add"
   body:
     type: json
     data: |-
       {
-          "targetModel": "Video",
-          "reason": "Other",
-          "details": "I don't like it."
+          "content": "Nature is beautiful."
       }
   auth: inherit
 

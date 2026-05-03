@@ -1,11 +1,11 @@
 info:
-  name: Get Replies of a Comment
+  name: Get Replies of a Comment of a Video
   type: http
   seq: 4
 
 http:
   method: GET
-  url: "{{server}}/comment/{{base64VideoId}}/{{base64ParentCommentId}}"
+  url: "{{server}}/comment/v/{{base64VideoId}}/reply/{{base64ParentCommentId}}"
   auth: inherit
 
 settings:

@@ -23,8 +23,8 @@ router.route('/p/:username').get(getUserPosts);
 ////////////////////////////////  AUTHENTICATED ROUTES  ////////////////////////////////
 
 router.route('/create').post(verifyJWT, upload.single('image'), createPost);
-router.route('/:postId').patch(verifyJWT, updatePost);
-router.route('/:postId').delete(verifyJWT, deletePost);
+router.route('/p/:postId').patch(verifyJWT, updatePost);
+router.route('/p/:postId').delete(verifyJWT, deletePost);
 
 
 

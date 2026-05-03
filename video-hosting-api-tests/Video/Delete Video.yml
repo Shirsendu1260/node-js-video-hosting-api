@@ -5,7 +5,7 @@ info:
 
 http:
   method: DELETE
-  url: "{{server}}/video/{{base64VideoId}}"
+  url: "{{server}}/video/v/{{base64VideoId}}"
   auth: inherit
 
 settings:

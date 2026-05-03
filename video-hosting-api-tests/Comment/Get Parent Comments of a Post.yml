@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{server}}/comment/{{base64PostId}}?page=1&limit=4&sortType=-1"
+  url: "{{server}}/comment/p/{{base64PostId}}?page=1&limit=4&sortType=-1"
   params:
     - name: page
       value: "1"
