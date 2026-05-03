@@ -613,6 +613,14 @@ const deleteVideo = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Unable to delete the video from storage, please try again.');
     }
 
+    // If video has thumnail, delete it too
+    if (video.thumbnail) {
+        const isOldVideoThumbnailDeletedFromCloudinary = await cloudinaryDeleter(video.thumbnail);
+        if (!isOldVideoThumbnailDeletedFromCloudinary) {
+            throw new ApiError(400, 'Unable to delete the video thumbnail from storage, please try again.');
+        }
+    }
+
     // Only delete from DB after Cloudinary confirms deletion
     const videoDeleted = await Video.findByIdAndDelete(decodedVideoId);
     if (!videoDeleted) {
