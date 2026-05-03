@@ -82,9 +82,6 @@ const getAllVideos = asyncHandler(async (req, res) => {
     if(user) {
         matchCondition.creator = new mongoose.Types.ObjectId(user._id);
     }
-    else {
-        throw new ApiError(404, 'User not found.');
-    }
 
     // If user is not the logged-in user, or if he/she is looking at someone else's account
     // filter only published videos, 

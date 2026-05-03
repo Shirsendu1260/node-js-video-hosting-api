@@ -41,7 +41,7 @@ const options: Options = {
 	},
 	apis: [
 		process.env.NODE_ENV === 'production' 
-		? './src/routes/*.js' // In production, /dist folder serves with .js build files
+		? './dist/routes/*.js' // In production, /dist folder serves with .js build files
 		: './src/routes/*.ts'
 	] // All routes resides here
 };
