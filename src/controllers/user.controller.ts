@@ -625,14 +625,47 @@ const changePassword = asyncHandler(async (req, res) => {
 
 
     /******** Step 3: Validate given passwords ********/
+    const validatorSchema = Joi.object({
+        newPassword: Joi.string()
+                        .min(6)
+                        .max(50)
+                        .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$"))
+                        .required()
+                        .messages({
+                          'string.pattern.base': 'New password must include uppercase, lowercase, and number',
+                          'string.min': 'New password must be at least 6 characters.',
+                          'string.max': 'New password cannot exceed 50 characters.',
+                          'string.empty': 'New password is required.',
+                          'any.required': 'New password is required.'
+                    }),
+        confirmedPassword: Joi.string()
+                                .valid(Joi.ref('newPassword'))
+                                // Joi.ref('newPassword') -> Reference the value of 'newPassword' field
+                                // .valid() -> The value must match this reference
+                                .required()
+                                .messages({
+                                    'any.only': 'Confirmed password must be exactly same as the new password.',
+                                    'string.empty': 'Confirmed password is required.',
+                                    'any.required': 'Confirmed password is required.'
+                                })
+    });
+
+    const { error } = validatorSchema.validate(
+        { newPassword, confirmedPassword }, 
+        { abortEarly: false }
+    );
+    
+    if(error) {
+        const errorArray: IErrorMessage[] = error.details.map(detail => {
+            return { [detail.path[0] as string]: detail.message };
+        });
+        throw new ApiError(400, 'Password validation failed.', errorArray);
+    }
+
     const isPasswordValid = await user.isPasswordCorrect(oldPassword);
 
     if(!isPasswordValid) {
-        throw new ApiError(400, 'Incorrect old password.');
-    }
-
-    if(newPassword !== confirmedPassword) {
-        throw new ApiError(400, 'New and confirmed passwords are not same.');
+        throw new ApiError(400, 'Incorrect old password.', [{ 'oldPassword': 'Incorrect old password' }]);
     }
 
 
