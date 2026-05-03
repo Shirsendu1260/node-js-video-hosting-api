@@ -478,6 +478,19 @@ const updateProfileDetails = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Profile update validation failed.', errorArray); // 400: Bad Request, means server cannot process the request because of a client-side error
     }
 
+    // Check if the new username or/and email already belongs to another user
+    const existingUser = await User.findOne({
+        $or: [
+            { username: username.toLowerCase() }, 
+            { email: email.toLowerCase() }
+        ],
+        _id: { $ne: req.user?._id } // Exclude the current user, whose profile details are going to be updated
+    });
+
+    if (existingUser) {
+        throw new ApiError(409, 'Username or email is already taken.');
+    }
+
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
