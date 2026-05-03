@@ -39,7 +39,11 @@ const options: Options = {
 			{ bearerAuth: [] }
 		],
 	},
-	apis: ['./src/routes/*.ts'] // All routes resides here
+	apis: [
+		process.env.NODE_ENV === 'production' 
+		? './src/routes/*.js' // In production, /dist folder serves with .js build files
+		: './src/routes/*.ts'
+	] // All routes resides here
 };
 
 const swaggerSpec = swaggerJSDoc(options);
