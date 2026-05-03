@@ -83,7 +83,7 @@ app.use(cookieParser());
 
 // 6. With rate limiter middleware, restricting client how many max. requests he/she can make to 
 //    our APIs within a time window specified in the middleware
-app.use(generalLimiter);
+app.use('/api/v1', generalLimiter);
 
 
 
