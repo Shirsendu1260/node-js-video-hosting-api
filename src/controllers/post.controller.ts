@@ -28,8 +28,12 @@ const createPost = asyncHandler(async (req, res) => {
                     .trim()
                     .min(1)
                     .max(2000)
+                    .required()
                     .messages({
+                        'string.min': 'Content must be at least 1 character.',
                         'string.max': 'Content cannot exceed 2000 characters.',
+                        'string.empty': 'Content is required.',
+                        'any.required': 'Content is required.'
                     })
     });
 
