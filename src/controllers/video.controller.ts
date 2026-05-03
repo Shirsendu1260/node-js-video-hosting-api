@@ -392,7 +392,42 @@ const getVideoById = asyncHandler(async (req, res) => {
     const decodedVideoId = getBase64DecodedId(videoId);
 
     // Now query, at this point decoded id is a valid mongodb string id
-    const video = await Video.findById(decodedVideoId);
+    const videoDoc = await Video.aggregate([
+        {
+            $match: { _id: new mongoose.Types.ObjectId(decodedVideoId) }
+        },
+
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'creator',
+                foreignField: '_id',
+                as: 'creator',
+
+                pipeline: [
+                    {
+                        $project: {
+                            fullName: 1,
+                            username: 1,
+                            avatar: 1
+                        }
+                    }
+                ]
+            }
+        },
+
+        {
+            $addFields: {
+                creator: { $first: '$creator' }
+            }
+        }
+    ]);
+
+    if(!videoDoc || videoDoc.length === 0) {
+        throw new ApiError(404, "Video not found");
+    }
+
+    const video = videoDoc[0];
 
     if(!video) {
         throw new ApiError(404, "Video not found");
