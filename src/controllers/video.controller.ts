@@ -600,7 +600,7 @@ const updateVideoThumbnail = asyncHandler(async (req, res) => {
 
     // In thumbnailOnCloudinary?.secure_url, added optional chaining because cloudinaryUploader returns UploadApiResponse | null, so it won't crash
     if(!thumbnailOnCloudinary?.secure_url) {
-        throw new ApiError(400, 'Unable to upload the cover image, please try again.');
+        throw new ApiError(400, 'Unable to upload the thumbnail image, please try again.');
     }
 
     const videoThumbnailUpdated = await Video.findByIdAndUpdate(
