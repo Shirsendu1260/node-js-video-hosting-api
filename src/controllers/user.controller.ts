@@ -797,17 +797,14 @@ const getUserChannelDetails = asyncHandler(async (req, res) => {
 const getWatchHistory = asyncHandler(async (req, res) => {
     let { 
         page = 1, 
-        limit = 4,
-        sortType = -1
+        limit = 4
     } = req.query as {
         page?: string,
-        limit?: string,
-        sortType?: string, // -1 -> 'desc', 1 -> 'asc'
+        limit?: string
     };
 
     const pageNo = Number(page);
     const limitCount = Number(limit);
-    const sortTypeFinal = sortType === 'desc' ? -1 : 1;
 
     // Fetch the user to get the watch history array
     const user = await User.findById(req.user?._id);
@@ -821,13 +818,6 @@ const getWatchHistory = asyncHandler(async (req, res) => {
         {
             $match: {
                 _id: { $in: user.watchHistory }
-            }
-        },
-
-        // Sort by created date based on user choice
-        {
-            $sort: {
-                createdAt: sortTypeFinal
             }
         },
 

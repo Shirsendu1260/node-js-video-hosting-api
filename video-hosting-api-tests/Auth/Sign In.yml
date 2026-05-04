@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "username": "test_username",
+        "username": "testusername",
         "password": "{{testPassword}}"
       }
 
