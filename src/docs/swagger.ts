@@ -3,7 +3,7 @@ import type { Options } from 'swagger-jsdoc';
 
 const options: Options = {
 	definition: {
-		openapi: '3.0.0',
+		openapi: '3.0.0', // standard format for describing APIs
 		info: {
 			title: 'Video Hosting Backend API',
 			version: '1.0.0',
@@ -27,17 +27,17 @@ const options: Options = {
 	      }
 	    ],
 	    components: {
-			securitySchemes: {
+			securitySchemes: { // Tells how authentication works
 				bearerAuth: {
-					type: 'http',
-					scheme: 'bearer',
-					bearerFormat: 'JWT',
-				},
+					type: 'http', // HTTP auth
+					scheme: 'bearer', // Bearer token
+					bearerFormat: 'JWT', // JWT format
+				} // Generates Authorize button in Swagger UI, User can paste: Bearer <token>
 			},
 		},
-		security: [
-			{ bearerAuth: [] }
-		],
+		// security: [
+		// 	{ bearerAuth: [] }
+		// ], // All routes require authentication via JWT by default
 	},
 	apis: [
 		process.env.NODE_ENV === 'production' 
@@ -46,5 +46,17 @@ const options: Options = {
 	] // All routes resides here
 };
 
-const swaggerSpec = swaggerJSDoc(options);
+const swaggerSpec = swaggerJSDoc(options); // converts everything into OpenAPI JSON object
 export { swaggerSpec };
+
+
+
+
+
+// Flow:
+// Our JSDoc comments in routes
+// swagger-jsdoc reads them
+// Generates OpenAPI JSON
+// Swagger UI displays it at /api-docs
+
+// So this file is translator + config
