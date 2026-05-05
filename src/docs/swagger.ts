@@ -18,12 +18,12 @@ const options: Options = {
 		},
 		servers: [
 	      {
-	        url: 'http://localhost:8000/api/v1',
-	        description: 'Local server'
-	      },
-	      {
-	        url: 'https://vhostbackend.onrender.com/api/v1',
-	        description: 'Production server'
+	        url: process.env.NODE_ENV === 'production' 
+	        		? 'https://vhostbackend.onrender.com/api/v1'
+	        		: 'http://localhost:8000/api/v1',
+	        description: process.env.NODE_ENV === 'production' 
+			        		? 'Production server'
+			        		: 'Local server',
 	      }
 	    ],
 	    components: {
