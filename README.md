@@ -1,22 +1,22 @@
 # Node.js Video Hosting Backend API
 
-A backend REST API project for a video hosting platform, similar to YouTube in terms of core features. Built with Node.js, Express, TypeScript, and MongoDB.
+A backend REST API project for a video hosting platform, similar to YouTube in terms of core features. Built with Node.js, Express, TypeScript, Mongoose, and MongoDB.
 
-This started as part of the *Chai aur Backend* series, and I extended it significantly from there; migrated the whole codebase from JavaScript to TypeScript, added Joi validation, a content reporting feature, comment likes, role-based access control, rate limiting, and a few other things I felt were missing.
+This started as part of the *Chai aur Backend* series, and I extended it significantly; migrated the whole codebase from JavaScript to TypeScript, added Joi validation, a content reporting feature, comment likes, role-based access control, rate limiting, and a few other things I felt were missing.
 
 ---
 
 ## What's in it
 
-- **JWT Auth** — access + refresh token flow, stored in HttpOnly cookies. Also supports `Authorization: Bearer` header for Postman, other API clients, mobile devices etc.
-- **TypeScript** — not just surface-level. Custom interfaces, utility types, declaration merging for `req.user`, proper typing on Mongoose models & documents.
-- **Joi Validation** — runs before business logic on all write endpoints. Returns all field-level errors as an array, not just the first one.
-- **RBAC** — admin flag on users with a middleware that blocks non-admins from admin routes.
-- **Rate Limiting** — general limiter (25 req. / 15 min) applied globally, stricter auth limiter (6 req. / 15 min) on signin, signup, and token refresh.
-- **Cloudinary** — avatar, cover image, video uploads via Multer. Old files get deleted from Cloudinary when updated or removed.
-- **MongoDB Aggregations** — used for subscriber counts, channel stats, watch history, paginated video feeds, and text search with title/description weighting.
-- **Content Reporting** — users can report videos and posts, admins can review and update report statuses.
-- **Consistent responses** — custom `ApiError` and `ApiResponse` classes so every endpoint returns the same JSON structure.
+- **JWT Auth**: Access + refresh token flow, stored in HttpOnly cookies. Also supports `Authorization: Bearer` header for Postman, other API clients, mobile devices etc.
+- **TypeScript**: Not just surface-level. Custom interfaces, utility types, declaration merging for `req.user`, proper typing on Mongoose models & documents.
+- **Joi Validation**: Runs before business logic on all write endpoints. Returns all field-level errors as an array, not just the first one.
+- **RBAC**: Admin flag on users with a middleware that blocks non-admins from admin routes.
+- **Rate Limiting**: General limiter (40 req. / 15 min) applied globally, stricter auth limiter (6 req. / 15 min) on signin and token refresh, and signup limiter (5 req. / 1 day) on signup.
+- **Cloudinary**: Avatar, cover image, video uploads via Multer. Old files get deleted from Cloudinary when updated or removed.
+- **MongoDB Aggregations**: Used for subscriber counts, channel stats, watch history, paginated video feeds, and text search with title/description weighting.
+- **Content Reporting**: Users can report videos, posts, and comments; admins can review and update report statuses.
+- **Consistent responses**: Custom `ApiError` and `ApiResponse` classes so every endpoint returns the same JSON structure.
 
 ---
 
@@ -32,6 +32,7 @@ This started as part of the *Chai aur Backend* series, and I extended it signifi
 | Validation | Joi |
 | Storage | Cloudinary |
 | Auth & Security | JWT, Bcrypt, CORS, Cookie-parser, Express Rate Limit |
+| API Docs | Swagger |
 
 ---
 
@@ -95,7 +96,7 @@ npm start         # run compiled build
 http://localhost:8000/api/v1
 ```
 
-Protected routes need a valid JWT — either via HttpOnly cookie (browser) or `Authorization: Bearer <token>` header (Postman, other API clients, mobile devices etc.).
+Protected routes need a valid JWT, either via HttpOnly cookie (browser) or `Authorization: Bearer <token>` header (Postman, other API clients, mobile devices etc.).
 
 **Success response**
 ```json
