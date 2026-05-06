@@ -6,7 +6,7 @@ import rateLimit from 'express-rate-limit';
 // Prevents server abuse
 export const generalLimiter = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 minutes
-	limit: 40, // Limit each IP to 40 requests per 'window' (here, per 15 minutes)
+	limit: 35, // Limit each IP to 35 requests per 'window' (here, per 15 minutes)
 	standardHeaders: 'draft-8', // Sends standard RateLimit headers in response
 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 	message: {
@@ -22,7 +22,7 @@ export const generalLimiter = rateLimit({
 // Prevent brute-force and account creaton, login spam
 export const authLimiter = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 minutes
-	limit: 6, // Limit each IP to 6 requests per 'window' (here, per 15 minutes)
+	limit: 5, // Limit each IP to 5 requests per 'window' (here, per 15 minutes)
 	standardHeaders: 'draft-8', // Sends standard RateLimit headers in response
 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 	message: {
@@ -36,7 +36,7 @@ export const authLimiter = rateLimit({
 
 export const signUpLimiter = rateLimit({
 	windowMs: 24 * 60 * 60 * 1000, // 1 day
-	max: 5, // Max 5 account creation per IP per 'window'
+	max: 2, // Max 2 account creation per IP per 'window'
 	standardHeaders: 'draft-8', // Sends standard RateLimit headers in response
 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 	message: {
@@ -55,7 +55,7 @@ export const signUpLimiter = rateLimit({
 // Is (count > limit)? No -> allow request
 // Next request -> count = 2 -> Is (count > limit)? No -> allow request
 // ...
-// count = 41 -> Is (count > limit)? Yes -> block this request -> send 429 response
+// count = 36 -> Is (count > limit)? Yes -> block this request -> send 429 response
 // Window expires after 15 min -> count resets to 0
 
 
@@ -73,7 +73,7 @@ export const signUpLimiter = rateLimit({
 //   "message": "Too many attempts. Please try again after 15 minutes."
 // }
 // The response headers will also automatically include:
-// RateLimit-Limit: 6
+// RateLimit-Limit: 5
 // RateLimit-Remaining: 0
 // RateLimit-Reset: 2026-04-19T10:30:00.000Z
 // These tell the client exactly when they can retry.
@@ -91,6 +91,6 @@ export const signUpLimiter = rateLimit({
 // Redis is only needed when we scale to multiple server instances. We are nowhere near that.
 
 
-// It's 40 requests total to the entire server per IP in 15 minutes, not 40 per route.
-// So if a single IP hits /api/v1/video/all 36 times and /api/v1/user/get-auth-user 4 times, 
-// that's 41 total, they're blocked on the 41th request regardless of which route it hits.
+// It's 35 requests total to the entire server per IP in 15 minutes, not 35 per route.
+// So if a single IP hits /api/v1/video/all 31 times and /api/v1/user/get-auth-user 4 times, 
+// that's 35 total, they're blocked on the 36th request regardless of which route it hits.

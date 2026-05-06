@@ -2,7 +2,7 @@
 
 A backend REST API project for a video hosting platform, similar to YouTube in terms of core features. Built with Node.js, Express, TypeScript, Mongoose, and MongoDB.
 
-This started as part of the *Chai aur Backend* series, and I extended it significantly; migrated the whole codebase from JavaScript to TypeScript, added Joi validation, a content reporting feature, comment likes, role-based access control, rate limiting, and a few other things I felt were missing.
+This started as part of the *Chai aur Backend* series, and I extended it significantly; migrated the whole codebase from JavaScript to TypeScript, added Joi validation, a content reporting feature, comment likes, role-based access control, rate limiting, Swagger API doc and a few other things I felt were missing.
 
 ---
 
@@ -12,7 +12,7 @@ This started as part of the *Chai aur Backend* series, and I extended it signifi
 - **TypeScript**: Not just surface-level. Custom interfaces, utility types, declaration merging for `req.user`, proper typing on Mongoose models & documents.
 - **Joi Validation**: Runs before business logic on all write endpoints. Returns all field-level errors as an array, not just the first one.
 - **RBAC**: Admin flag on users with a middleware that blocks non-admins from admin routes.
-- **Rate Limiting**: General limiter (40 req. / 15 min) applied globally, stricter auth limiter (6 req. / 15 min) on signin and token refresh, and signup limiter (5 req. / 1 day) on signup.
+- **Rate Limiting**: General limiter (35 req. / 15 min) applied globally, stricter auth limiter (5 req. / 15 min) on signin and token refresh, and signup limiter (2 req. / 1 day) on signup.
 - **Cloudinary**: Avatar, cover image, video uploads via Multer. Old files get deleted from Cloudinary when updated or removed.
 - **MongoDB Aggregations**: Used for subscriber counts, channel stats, watch history, paginated video feeds, and text search with title/description weighting.
 - **Content Reporting**: Users can report videos, posts, and comments; admins can review and update report statuses.
@@ -87,6 +87,8 @@ npm run dev       # development server
 npm run build     # compile TS to JS
 npm start         # run compiled build
 ```
+
+All endpoints are tested with Bruno API Client, the collection is included in the repo under `/video-hosting-api-tests`.
 
 ---
 
