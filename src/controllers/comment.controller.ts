@@ -160,6 +160,10 @@ const getNestedComments = asyncHandler(async (req, res) => {
         throw new ApiError(404, 'Parent comment does not exist.');
     }
 
+    if(parentComment.isHidden) {
+        throw new ApiError(404, 'Parent comment does not exist.');
+    }
+
     const pipeline: PipelineStage[] = [];
 
 
@@ -169,11 +173,13 @@ const getNestedComments = asyncHandler(async (req, res) => {
         post?: mongoose.Types.ObjectId,
         isChildComment: true,
         parentComment: mongoose.Types.ObjectId,
+        isHidden: boolean 
     };
 
     const matchCondition: MatchCondition = {
         isChildComment: true, // for replies
-        parentComment: new mongoose.Types.ObjectId(decodedParentCommentId)
+        parentComment: new mongoose.Types.ObjectId(decodedParentCommentId),
+        isHidden: false
     };
 
     if(videoId) {
