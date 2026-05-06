@@ -186,7 +186,7 @@ const getAllReports = asyncHandler(async (req, res) => {
     if(targetModel) matchCondition.targetModel = targetModel;
 
     const reportAggregate = Report.aggregate([
-        // Match by report status or target model (Video/Post)
+        // Match by report status or target model (Video/Post/Comment)
         {
             $match: matchCondition
         },
@@ -217,7 +217,7 @@ const getAllReports = asyncHandler(async (req, res) => {
             }
         },
 
-        // Lookup to get content (Video/Post) details
+        // Lookup to get content (Video/Post/Comment) details
         // Since we are using 'refPath', the 'from' field need to be dynamic
         // Aggregation does not support dynamic 'from' in a single $lookup easily
         // so we use $lookup for both, then we choose which one to keep based on admin's request (targetModel)
@@ -230,10 +230,37 @@ const getAllReports = asyncHandler(async (req, res) => {
                 foreignField: '_id',
                 as: 'targetVideo',
                 pipeline: [
+                    // Lookup to get creator details
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'creator',
+                            foreignField: '_id',
+                            as: 'creator',
+
+                            pipeline: [
+                                {
+                                    $project: {
+                                        username: 1,
+                                        fullName: 1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+
+                    {
+                        $addFields: {
+                            creator: { $first: '$creator' }
+                        }
+                    },
+
                     {
                         $project: {
                             title: 1,
-                            thumbnail: 1
+                            thumbnail: 1,
+                            creator: 1
                         }
                     }
                 ]
@@ -248,33 +275,111 @@ const getAllReports = asyncHandler(async (req, res) => {
                 foreignField: '_id',
                 as: 'targetPost',
                 pipeline: [
+                    // Lookup to get creator details
                     {
-                        $project: { content: 1 }
+                        $lookup: {
+                            from: 'users',
+                            localField: 'creator',
+                            foreignField: '_id',
+                            as: 'creator',
+
+                            pipeline: [
+                                {
+                                    $project: {
+                                        username: 1,
+                                        fullName: 1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+
+                    {
+                        $addFields: {
+                            creator: { $first: '$creator' }
+                        }
+                    },
+
+                    {
+                        $project: { 
+                            content: 1,
+                            creator: 1
+                        }
                     }
                 ]
             }
         },
 
-        // Now we choose which one to keep so that 'target' contains either video or post
+        // 3. Lookup for Comment details for each comment report
+        {
+            $lookup: {
+                from: 'comments',
+                localField: 'targetId',
+                foreignField: '_id',
+                as: 'targetComment',
+                pipeline: [
+                    // Lookup to get creator details
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'creator',
+                            foreignField: '_id',
+                            as: 'creator',
+
+                            pipeline: [
+                                {
+                                    $project: {
+                                        username: 1,
+                                        fullName: 1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+
+                    {
+                        $addFields: {
+                            creator: { $first: '$creator' }
+                        }
+                    },
+
+                    {
+                        $project: { 
+                            content: 1,
+                            creator: 1
+                        }
+                    }
+                ]
+            }
+        },
+
+        // Now we choose which one to keep so that 'target' contains either video or post or comment
         {
             $addFields: {
                 targetData: {
                     $cond: {
-                        if: {
-                            $eq: ['$targetModel', 'Video']
-                        },
+                        if: { $eq: ['$targetModel', 'Video'] },
                         then: { $first: '$targetVideo' },
-                        else: { $first: '$targetPost' }
+                        else: {
+                            $cond: {
+                                if: { $eq: ['$targetModel', 'Post'] },
+                                then: { $first: '$targetPost' },
+                                else: { $first: '$targetComment' }
+                            }
+                        }
                     }
                 }
-            }            
+            }
         },
 
         // Remove unnecesary keys
         {
             $project: {
                 targetVideo: 0,
-                targetPost: 0
+                targetPost: 0,
+                targetComment: 0
             }
         },
 
