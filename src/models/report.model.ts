@@ -8,7 +8,7 @@ interface IReport {
 	targetModel: 'Video' | 'Post' | 'Comment',
 	reason: 'Hate Speech' | 'Harassment' | 'Violence' | 'Spam' | 'Scam' | 'Inappropriate' | 'Other',
 	details?: string,
-	status: 'PEND' | 'REV' | 'RES' // 'PEND' -> 'Pending', 'REV' -> 'Reviewed', 'RES' -> 'Resolved'
+	status: 'PEND' | 'REV' | 'RES' // 'PEND' -> 'Pending', 'REV' -> 'Reviewing', 'RES' -> 'Resolved'
 }
 
 type ReportDocument = IReport & Document;
@@ -45,7 +45,7 @@ const reportSchema = new mongoose.Schema<ReportDocument, ReportModel>({
 		type: String,
 		required: [true, 'Status is required.'],
 		enum: ['PEND', 'REV', 'RES'],
-		description: "'PEND' -> 'Pending', 'REV' -> 'Reviewed', 'RES' -> 'Resolved'"
+		description: "'PEND' -> 'Pending', 'REV' -> 'Reviewing', 'RES' -> 'Resolved'"
 	}
 }, { timestamps: true });
 
