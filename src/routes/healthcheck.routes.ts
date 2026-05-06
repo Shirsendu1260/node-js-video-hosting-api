@@ -5,7 +5,7 @@ const router = Router();
 
 /**
  * @openapi
- * /healthcheck:
+ * /healthcheck/get:
  *   get:
  *     tags:
  *       - Healthcheck
@@ -16,6 +16,6 @@ const router = Router();
  *       429:
  *         description: Rate limit exceeded.
  */
-router.route('/').get(healthcheck);
+router.route('/get').get(healthcheck);
 
 export default router;
