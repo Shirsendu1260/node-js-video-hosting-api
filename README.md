@@ -31,7 +31,7 @@ This started as part of the *Chai aur Backend* series, and I extended it signifi
 | ODM | Mongoose |
 | Validation | Joi |
 | Storage | Cloudinary |
-| Auth & Security | JWT, Bcrypt, CORS, Cookie-parser, Express Rate Limit |
+| Auth & Security | JWT, Bcrypt, Helmet middleware, CORS, Cookie-parser, Express Rate Limit |
 | API Docs | Swagger |
 
 ---
