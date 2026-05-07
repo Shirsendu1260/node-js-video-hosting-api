@@ -1,4 +1,5 @@
 import express from 'express';
+import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { DATA_LIMIT } from './constants.js';
@@ -23,6 +24,9 @@ import { swaggerSpec } from './docs/swagger.js';
 
 
 const app = express();
+
+// Adds common security related http headers to protect the API from vulnerabilities like XSS, clickjacking, MIME-type sniffing, etc.
+app.use(helmet());
 
 app.set('trust proxy', 1); // Trust first proxy (proxy/load balancer)
 
