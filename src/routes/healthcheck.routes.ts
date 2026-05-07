@@ -12,7 +12,7 @@ const router = Router();
  *     summary: Get standard 200 response for healthcheck.
  *     responses:
  *       200:
- *         description: STATUS: ALL OK
+ *         description: ALL OK
  *       429:
  *         description: Rate limit exceeded.
  */
