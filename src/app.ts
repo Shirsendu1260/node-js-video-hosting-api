@@ -26,7 +26,11 @@ import { swaggerSpec } from './docs/swagger.js';
 const app = express();
 
 // Adds common security related http headers to protect the API from vulnerabilities like XSS, clickjacking, MIME-type sniffing, etc.
-app.use(helmet());
+app.use(
+  helmet({
+    xPoweredBy: false, // Ignore the X-Powered-By header (i.e. x-powered-by: Express)
+  }),
+);
 
 app.set('trust proxy', 1); // Trust first proxy (proxy/load balancer)
 
