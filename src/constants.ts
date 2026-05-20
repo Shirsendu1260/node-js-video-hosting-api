@@ -12,4 +12,4 @@ export const COOKIE_SEND_OPTIONS = {
 // Without 'as const': TypeScript infers type as { httpOnly: boolean, secure: boolean, sameSite: string }
 // With 'as const':    TypeScript infers type as { readonly httpOnly: true, readonly secure: true, readonly sameSite: 'strict' }
 // 'true' = literal type, means ONLY true, never false
-// This means the values can NEVER be changed anywhere in the codebase
+// This means the values can NEVER be changed anywhere in the codebase.
